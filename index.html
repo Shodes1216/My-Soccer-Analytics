@@ -203,6 +203,7 @@
     <div class="tab" data-view="newmatch">New Match</div>
     <div class="tab" data-view="matches">Match History</div>
     <div class="tab" data-view="players">Players</div>
+    <div class="tab" data-view="team">Team</div>
   </div>
 
   <!-- ===================== DASHBOARD ===================== -->
@@ -293,12 +294,14 @@
         <span><span class="dot" style="background:var(--goal-red)"></span> Saved / Blocked</span>
         <span><span class="dot" style="background:var(--goal-black)"></span> Missed (off target)</span>
       </div>
+      <div class="shot-controls" style="margin-top:6px"><button class="btn-ghost" onclick="undoLastShot()">Undo last shot</button></div>
       <div class="shot-log" id="shotLog"></div>
     </div>
 
     <div class="panel">
       <h2>Match Events<span class="yard"></span></h2>
       <div class="video-note">Tap a player, then tap what happened — it logs instantly (with the video's current time, if one's loaded). No dropdowns, no extra clicks.</div>
+      <label style="margin-top:4px">Tagging as</label>
       <div class="player-select-grid" id="eventPlayerChips"></div>
       <div id="quickTagGrid"></div>
       <div class="shot-controls" style="margin-top:10px">
@@ -307,7 +310,10 @@
         <button class="btn-ghost" onclick="undoLastEvent()">Undo last</button>
       </div>
       <div class="event-pitch-wrap">
-        <label>Click where it happened on the pitch (optional)</label>
+        <label>Show on pitch (pick players — none selected means the pitch stays clear)</label>
+        <div class="player-select-grid" id="pitchFilterChips" style="justify-content:center"></div>
+        <div style="text-align:center;margin-bottom:8px"><span class="btn-ghost" onclick="selectAllPitchFilter()">Show all</span> <span class="btn-ghost" onclick="clearPitchFilter()">Clear</span></div>
+        <div class="video-note" style="text-align:center">Click the pitch to mark where the next tagged event happened (optional).</div>
         <svg id="eventPitchSvg" viewBox="0 0 400 600" style="width:100%;border-radius:8px;background:var(--pitch-mid);cursor:crosshair;display:block"></svg>
         <div class="legend" id="categoryLegend"></div>
       </div>
@@ -317,6 +323,11 @@
         <button class="btn-ghost" onclick="logGkEventWithoutLocation()">Log without marking a location</button>
       </div>
       <div class="event-log-wrap" id="eventLog"></div>
+      <div id="recipientPicker" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+        <label style="margin-bottom:6px">Who received it? <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional — builds the pass network)</span></label>
+        <div class="player-select-grid" id="recipientChips"></div>
+        <span class="btn-ghost" onclick="dismissRecipientPicker()">Skip</span>
+      </div>
     </div>
 
     <button class="btn" onclick="saveMatch()">Save match</button>
@@ -344,6 +355,11 @@
     </div>
   </div>
 
+  <!-- ===================== TEAM DASHBOARD ===================== -->
+  <div class="view" id="view-team">
+    <div id="teamDashboardContent"></div>
+  </div>
+
 </div>
 
 <div class="modal-overlay" id="playerModalOverlay" onclick="if(event.target===this) closePlayerModal()">
@@ -362,6 +378,18 @@
     <button class="btn" style="width:100%" onclick="submitNewPasscode()">Save new passcode</button>
     <div id="passcodeChangeMsg" class="lock-error"></div>
     <div class="video-note">Anyone using this app will need the new passcode next time they open it.</div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="deleteConfirmModalOverlay" onclick="if(event.target===this) closeDeleteConfirm()">
+  <div class="modal-box" style="max-width:360px">
+    <span class="modal-close" onclick="closeDeleteConfirm()">✕</span>
+    <h2 style="font-size:16px;color:var(--goal-red)">Delete This Match?</h2>
+    <div class="video-note" style="margin-bottom:10px">This permanently removes the match, its shots, events, and video link. This can't be undone. Enter the team passcode to confirm.</div>
+    <label>Passcode</label>
+    <input type="password" id="deleteConfirmPasscodeInput" placeholder="Passcode" onkeydown="if(event.key==='Enter') confirmDeleteMatch()">
+    <button class="btn danger" style="width:100%" onclick="confirmDeleteMatch()">Delete match</button>
+    <div id="deleteConfirmMsg" class="lock-error"></div>
   </div>
 </div>
 
@@ -454,12 +482,26 @@ function onEventPitchClick(evt){
   marker.setAttribute('r', 8); marker.setAttribute('fill', 'var(--amber)'); marker.setAttribute('stroke', '#fff'); marker.setAttribute('stroke-width', 1.5);
   svg.appendChild(marker);
 }
+let pitchFilterPlayerIds = new Set();
+function renderPitchFilterChips(){
+  const el = document.getElementById('pitchFilterChips');
+  if(!el) return;
+  el.innerHTML = players.map(p=>`<div class="player-chip ${pitchFilterPlayerIds.has(p.id)?'sel':''}" onclick="togglePitchFilterPlayer('${p.id}')">${escapeHtml(p.name)}${p.number?(' #'+p.number):''}</div>`).join('');
+}
+function togglePitchFilterPlayer(id){
+  if(pitchFilterPlayerIds.has(id)) pitchFilterPlayerIds.delete(id); else pitchFilterPlayerIds.add(id);
+  renderPitchFilterChips();
+  drawEventPitch();
+}
+function selectAllPitchFilter(){ pitchFilterPlayerIds = new Set(players.map(p=>p.id)); renderPitchFilterChips(); drawEventPitch(); }
+function clearPitchFilter(){ pitchFilterPlayerIds = new Set(); renderPitchFilterChips(); drawEventPitch(); }
 function drawExistingEventMarks(){
   const svg = document.getElementById('eventPitchSvg');
   if(!svg) return;
   let html='';
   currentEvents.forEach(e=>{
     if(e.x===undefined || e.y===undefined) return;
+    if(!pitchFilterPlayerIds.has(e.playerId)) return;
     const type = EVENT_TYPES.find(t=>t.id===e.typeId);
     const color = type ? (CATEGORY_COLORS[type.cat]||'var(--amber)') : 'var(--amber)';
     const player = players.find(p=>p.id===e.playerId);
@@ -470,11 +512,42 @@ function drawExistingEventMarks(){
 }
 const SHOT_TYPES = [{id:'right',label:'Right Foot'},{id:'left',label:'Left Foot'},{id:'header',label:'Header'}];
 const SITUATIONS = [{id:'open_play',label:'Open Play'},{id:'corner',label:'Corner Kick'},{id:'free_kick',label:'Free Kick'},{id:'throw_in',label:'Throw-In'}];
+/* Simplified xG (Expected Goals) estimate.
+   This is a hand-built heuristic based on shot distance and angle from
+   goal, plus adjustments for shot type/situation — NOT a professionally
+   trained statistical model like Opta/StatsBomb use (those are fit on
+   millions of tracked shots including defender/keeper positioning, which
+   we don't capture). Treat this as a useful relative indicator of chance
+   quality, not a precise probability. */
+function calcXG(shot){
+  const postL = {x:178, y:2}, postR = {x:222, y:2};
+  const S = {x:shot.originX, y:shot.originY};
+  const v1 = {x:postL.x-S.x, y:postL.y-S.y};
+  const v2 = {x:postR.x-S.x, y:postR.y-S.y};
+  const mag1 = Math.hypot(v1.x,v1.y), mag2 = Math.hypot(v2.x,v2.y);
+  let angle = 0;
+  if(mag1>0 && mag2>0){
+    const cos = Math.max(-1, Math.min(1, (v1.x*v2.x+v1.y*v2.y)/(mag1*mag2)));
+    angle = Math.acos(cos);
+  }
+  const distance = Math.hypot(S.x-200, S.y-2);
+  let z = -1.0;
+  z += angle * 2.2;
+  z -= distance * 0.018;
+  if(shot.shotType==='header') z -= 0.5;
+  if(shot.situation==='open_play') z += 0.15;
+  if(shot.situation==='corner') z -= 0.1;
+  if(shot.situation==='free_kick') z -= 0.3;
+  if(shot.situation==='throw_in') z -= 0.05;
+  const xg = 1/(1+Math.exp(-z));
+  return Math.max(0.01, Math.min(0.95, xg));
+}
 function shotNote(s){
   const st = SHOT_TYPES.find(t=>t.id===s.shotType);
   const si = SITUATIONS.find(t=>t.id===s.situation);
   const out = s.outcome==='goal'?'Goal':s.outcome==='saved'?'Saved / Blocked':'Missed';
-  return `${st?st.label:'Shot'} \u2022 ${si?si.label:'Open Play'} \u2022 ${out}`;
+  const xg = calcXG(s).toFixed(2);
+  return `${st?st.label:'Shot'} \u2022 ${si?si.label:'Open Play'} \u2022 ${out} \u2022 xG ${xg}`;
 }
 
 /* ============================================================
@@ -487,6 +560,7 @@ function computeStatsForPlayer(shots, events, minutes){
   const chartMissed = shots.filter(s=>s.outcome==='missed').length;
   const chartTotal = shots.length;
   const chartOnTarget = chartGoals+chartSaved;
+  const totalXG = shots.reduce((sum,s)=>sum+calcXG(s), 0);
   const evGoals = ev('goal'), evShots = ev('shot'), evShotsOnTarget = ev('shot_on_target');
   const goals = chartGoals + evGoals;
   const total = chartTotal + evShots;
@@ -503,7 +577,7 @@ function computeStatsForPlayer(shots, events, minutes){
   return {
     minutes: minutes||0, goals, assists: ev('assist'),
     shotsTotal: total, shotsOnTarget: onTarget, shotsOffTarget: missed,
-    shotAccuracy: pct(onTarget,total),
+    shotAccuracy: pct(onTarget,total), xG: Math.round(totalXG*100)/100,
     headedShots: ev('headed_shot'),
     passC, passA: passC+passF, passAcc: pct(passC,passC+passF),
     bigChancesCreated: ev('big_chance_created'),
@@ -590,6 +664,7 @@ const STAT_COLUMNS = [
   {label:'Ast', get:s=>s.assists},
   {label:'Shots', title:'On target / Total shots', get:s=>`${s.shotsOnTarget}/${s.shotsTotal}`},
   {label:'Shot%', get:s=>s.shotsTotal? s.shotAccuracy+'%':'-'},
+  {label:'xG', title:'Expected Goals — simplified estimate based on shot distance/angle/type, not a full tracked-data model', get:s=>(s.xG||0).toFixed(2)},
   {label:'Hdr', title:'Headed Shots', get:s=>s.headedShots},
   {label:'Passes', title:'Completed / Attempted', get:s=>`${s.passC}/${s.passA}`},
   {label:'Pass%', get:s=>s.passA? s.passAcc+'%':'-'},
@@ -651,6 +726,146 @@ function facedShotsForPlayer(playerId){
     });
   });
   return out;
+}
+
+/* ============================================================
+   TEAM DASHBOARD — record, aggregate stats, leaderboards, pass network
+============================================================ */
+function computePassNetwork(){
+  const counts = {};
+  matches.forEach(m=>{
+    (m.events||[]).forEach(e=>{
+      if(PASS_NETWORK_TYPES.includes(e.typeId) && e.targetPlayerId){
+        const key = e.playerId+'|'+e.targetPlayerId;
+        counts[key] = (counts[key]||0)+1;
+      }
+    });
+  });
+  return Object.entries(counts).map(([key,count])=>{
+    const [fromId,toId] = key.split('|');
+    return {fromId, toId, count};
+  }).sort((a,b)=>b.count-a.count);
+}
+function renderPassNetworkSVG(connections){
+  const involvedIds = Array.from(new Set(connections.flatMap(c=>[c.fromId,c.toId])));
+  if(involvedIds.length===0) return '<div class="empty">No pass connections tagged yet — attach a recipient next time you tag a pass, cross, long ball, big chance, or assist.</div>';
+  const cx=200, cy=200, r=150;
+  const positions = {};
+  involvedIds.forEach((id,i)=>{
+    const angle = (2*Math.PI*i/involvedIds.length) - Math.PI/2;
+    positions[id] = {x: cx+r*Math.cos(angle), y: cy+r*Math.sin(angle)};
+  });
+  const maxCount = Math.max(...connections.map(c=>c.count));
+  const lines = connections.map(c=>{
+    const a = positions[c.fromId], b = positions[c.toId];
+    if(!a||!b) return '';
+    const p1 = players.find(p=>p.id===c.fromId), p2 = players.find(p=>p.id===c.toId);
+    const width = 1 + (c.count/maxCount)*7;
+    const opacity = 0.25 + (c.count/maxCount)*0.55;
+    return `<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="var(--amber)" stroke-width="${width}" opacity="${opacity}"><title>${escapeHtml(p1?p1.name:'?')} \u2192 ${escapeHtml(p2?p2.name:'?')}: ${c.count}</title></line>`;
+  }).join('');
+  const nodes = involvedIds.map(id=>{
+    const p = players.find(pp=>pp.id===id);
+    const pos = positions[id];
+    return `<g><circle cx="${pos.x}" cy="${pos.y}" r="20" fill="var(--panel)" stroke="var(--amber)" stroke-width="2"/>
+      <text x="${pos.x}" y="${pos.y+4}" text-anchor="middle" font-size="10" font-weight="700" fill="var(--chalk)" font-family="Inter,sans-serif">${escapeHtml(p?(p.number||p.name.slice(0,2)):'?')}</text>
+      <title>${escapeHtml(p?p.name:'Unknown')}</title></g>`;
+  }).join('');
+  return `<svg viewBox="0 0 400 400" style="width:100%;max-width:440px;display:block;margin:0 auto;background:#f7f9fb;border-radius:8px;border:1px solid var(--border)">${lines}${nodes}</svg>`;
+}
+function renderPassNetworkList(connections){
+  if(connections.length===0) return '';
+  return `<div class="table-wrap" style="max-height:220px"><table class="stats"><thead><tr><th>From</th><th>To</th><th>Times</th></tr></thead><tbody>
+    ${connections.slice(0,15).map(c=>{
+      const p1 = players.find(p=>p.id===c.fromId), p2 = players.find(p=>p.id===c.toId);
+      return `<tr><td class="name-cell">${p1?escapeHtml(p1.name):'Unknown'}</td><td>${p2?escapeHtml(p2.name):'Unknown'}</td><td>${c.count}</td></tr>`;
+    }).join('')}
+  </tbody></table></div>`;
+}
+function teamRecord(){
+  let w=0,d=0,l=0,gf=0,ga=0;
+  matches.forEach(m=>{
+    gf += m.scoreFor; ga += m.scoreAgainst;
+    if(m.scoreFor>m.scoreAgainst) w++; else if(m.scoreFor<m.scoreAgainst) l++; else d++;
+  });
+  return {w,d,l,gf,ga,played:matches.length};
+}
+function teamAggregateStats(){
+  let allShots=[], allEvents=[], totalMinutes=0;
+  matches.forEach(m=>{
+    allShots = allShots.concat(m.shots||[]);
+    allEvents = allEvents.concat(m.events||[]);
+    Object.values(m.minutesByPlayer||{}).forEach(min=>{ totalMinutes += (min||0); });
+  });
+  return computeStatsForPlayer(allShots, allEvents, totalMinutes);
+}
+function topPlayersBy(getValue, count){
+  return players.map(p=>{
+    const {stats} = aggregatePlayerAcrossMatches(p.id);
+    return {player:p, stats, value:getValue(stats)};
+  }).filter(x=>x.value>0).sort((a,b)=>b.value-a.value).slice(0,count);
+}
+function topPlayersByRating(count){
+  return players.map(p=>{
+    const breakdown = playerMatchBreakdown(p.id);
+    if(breakdown.length===0) return null;
+    const avg = Math.round((breakdown.reduce((a,b)=>a+b.rating,0)/breakdown.length)*10)/10;
+    return {player:p, value:avg, apps:breakdown.length};
+  }).filter(Boolean).sort((a,b)=>b.value-a.value).slice(0,count);
+}
+function leaderboardHTML(title, rows, formatFn){
+  if(rows.length===0) return `<div class="stat-card"><div class="lbl">${title}</div><div class="empty" style="padding:10px">No data yet</div></div>`;
+  return `<div style="flex:1;min-width:220px">
+    <div class="qt-cat-label" style="color:var(--amber)">${title}</div>
+    ${rows.map((r,i)=>`<div class="shot-log-row"><span style="width:16px;color:var(--chalk-dim);font-weight:700">${i+1}</span><span style="flex:1;font-weight:600">${escapeHtml(r.player.name)}</span><span style="color:var(--amber);font-weight:700">${formatFn(r)}</span></div>`).join('')}
+  </div>`;
+}
+function renderTeamDashboard(){
+  const el = document.getElementById('teamDashboardContent');
+  if(matches.length===0){ el.innerHTML = '<div class="panel"><div class="empty">No matches saved yet — the team dashboard fills in once you log some games.</div></div>'; return; }
+  const rec = teamRecord();
+  const stats = teamAggregateStats();
+  const connections = computePassNetwork();
+  const recent = matches.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,8);
+
+  el.innerHTML = `
+    <div class="panel">
+      <h2>Season Record<span class="yard"></span></h2>
+      <div class="stat-cards">
+        <div class="stat-card"><div class="num">${rec.played}</div><div class="lbl">Played</div></div>
+        <div class="stat-card"><div class="num">${rec.w}-${rec.d}-${rec.l}</div><div class="lbl">W-D-L</div></div>
+        <div class="stat-card"><div class="num">${rec.gf}</div><div class="lbl">Goals For</div></div>
+        <div class="stat-card"><div class="num">${rec.ga}</div><div class="lbl">Goals Against</div></div>
+        <div class="stat-card"><div class="num">${rec.gf-rec.ga>=0?'+':''}${rec.gf-rec.ga}</div><div class="lbl">Goal Diff.</div></div>
+        <div class="stat-card"><div class="num">${stats.xG.toFixed(2)}</div><div class="lbl">Team xG</div></div>
+        <div class="stat-card"><div class="num">${stats.shotsTotal?stats.shotAccuracy+'%':'-'}</div><div class="lbl">Shot Accuracy</div></div>
+        <div class="stat-card"><div class="num">${stats.passA?stats.passAcc+'%':'-'}</div><div class="lbl">Pass Accuracy</div></div>
+      </div>
+      <h2 style="font-size:14px">Recent Form<span class="yard"></span></h2>
+      <div>${recent.map(m=>resultTag(m)).join(' ')}</div>
+    </div>
+
+    <div class="panel">
+      <h2>Leaderboards<span class="yard"></span></h2>
+      <div style="display:flex;flex-wrap:wrap;gap:20px">
+        ${leaderboardHTML('Top Scorers', topPlayersBy(s=>s.goals,5), r=>r.value)}
+        ${leaderboardHTML('Top Assists', topPlayersBy(s=>s.assists,5), r=>r.value)}
+        ${leaderboardHTML('Highest Rated', topPlayersByRating(5), r=>r.value.toFixed(1))}
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Pass Network<span class="yard"></span></h2>
+      <div class="video-note" style="margin-bottom:10px">Built from recipients you've optionally attached when tagging passes, crosses, long balls, big chances, and assists. Line thickness = connection frequency.</div>
+      ${renderPassNetworkSVG(connections)}
+      ${renderPassNetworkList(connections)}
+    </div>
+
+    <div class="panel">
+      <h2>Full Team Totals<span class="yard"></span></h2>
+      ${buildStatsTableHTML([{name:'Whole Team', stats}])}
+    </div>
+  `;
 }
 
 /* ============================================================
@@ -726,6 +941,7 @@ document.querySelectorAll('.tab').forEach(t=>{
     if(t.dataset.view==='players'){ renderPlayerChips(); }
     if(t.dataset.view==='matches'){ renderMatchList(); closeMatchDetail(); }
     if(t.dataset.view==='newmatch'){ populatePlayerSelects(); renderMinutesTableBody(); }
+    if(t.dataset.view==='team'){ renderTeamDashboard(); }
   });
 });
 
@@ -767,6 +983,7 @@ function populatePlayerSelects(){
   document.querySelectorAll('.player-select').forEach(sel=>{ sel.innerHTML = opts; });
   renderEventPlayerChips();
   renderQuickTagGrid();
+  renderPitchFilterChips();
 }
 let activeEventPlayerId = null;
 function renderEventPlayerChips(){
@@ -935,18 +1152,40 @@ function seekToEvent(ts){
    MATCH EVENTS (new match, in progress)
 ============================================================ */
 let currentEvents = [];
+const PASS_NETWORK_TYPES = ['pass_success','cross_success','longball_success','big_chance_created','assist'];
 function currentAutoTimestamp(){
   if(currentVideoEl){ return formatSeconds(currentVideoEl.currentTime); }
   const manual = document.getElementById('eventTimestamp');
   return manual ? manual.value.trim() : '';
 }
+let lastLoggedEventIndex = null;
 function quickAddEvent(typeId){
   if(!activeEventPlayerId){ alert('Add a player to the roster first.'); return; }
   const evObj = {playerId: activeEventPlayerId, typeId, timestamp: currentAutoTimestamp()};
   if(pendingEventLocation){ evObj.x = pendingEventLocation.x; evObj.y = pendingEventLocation.y; pendingEventLocation = null; }
   currentEvents.push(evObj);
+  lastLoggedEventIndex = currentEvents.length-1;
   drawEventPitch();
   renderEventLog();
+  if(PASS_NETWORK_TYPES.includes(typeId)) showRecipientPicker(); else dismissRecipientPicker();
+}
+function showRecipientPicker(){
+  const wrap = document.getElementById('recipientPicker');
+  const chips = document.getElementById('recipientChips');
+  if(!wrap || !chips || lastLoggedEventIndex===null) return;
+  const passerId = currentEvents[lastLoggedEventIndex].playerId;
+  chips.innerHTML = players.filter(p=>p.id!==passerId).map(p=>`<div class="player-chip" onclick="setRecipient('${p.id}')">${escapeHtml(p.name)}${p.number?(' #'+p.number):''}</div>`).join('');
+  wrap.style.display = 'block';
+}
+function setRecipient(playerId){
+  if(lastLoggedEventIndex===null || !currentEvents[lastLoggedEventIndex]) return;
+  currentEvents[lastLoggedEventIndex].targetPlayerId = playerId;
+  dismissRecipientPicker();
+  renderEventLog();
+}
+function dismissRecipientPicker(){
+  const wrap = document.getElementById('recipientPicker');
+  if(wrap) wrap.style.display = 'none';
 }
 function beginGkEvent(typeId){
   if(!activeEventPlayerId){ alert('Add a player to the roster first.'); return; }
@@ -972,10 +1211,12 @@ function logGkEventWithoutLocation(){
 function undoLastEvent(){
   if(currentEvents.length===0) return;
   currentEvents.pop();
+  lastLoggedEventIndex = null;
+  dismissRecipientPicker();
   drawEventPitch();
   renderEventLog();
 }
-function removeEvent(i){ currentEvents.splice(i,1); renderEventLog(); }
+function removeEvent(i){ currentEvents.splice(i,1); lastLoggedEventIndex = null; dismissRecipientPicker(); drawEventPitch(); renderEventLog(); }
 function sortEventsForDisplay(list){
   const withIdx = list.map((e,i)=>({...e,i}));
   withIdx.sort((a,b)=>{
@@ -993,10 +1234,11 @@ function renderEventLog(){
   el.innerHTML = sortEventsForDisplay(currentEvents).map(e=>{
     const player = players.find(p=>p.id===e.playerId);
     const type = EVENT_TYPES.find(t=>t.id===e.typeId);
+    const recipient = e.targetPlayerId ? players.find(p=>p.id===e.targetPlayerId) : null;
     return `<div class="event-row" onclick="seekToEvent('${e.timestamp}')">
       <span class="ev-time">${e.timestamp||'--:--'}</span>
       <span class="ev-player">${player?escapeHtml(player.name):'Unknown'}</span>
-      <span class="ev-type">${type?type.label:e.typeId}</span>
+      <span class="ev-type">${type?type.label:e.typeId}${recipient?' \u2192 '+escapeHtml(recipient.name):''}</span>
       <span class="ev-rm" onclick="event.stopPropagation(); removeEvent(${e.i})">remove</span>
     </div>`;
   }).join('');
@@ -1152,6 +1394,11 @@ function renderShotLog(){
   }).join('');
 }
 function removeShot(i){ currentShots.splice(i,1); drawPitch(); drawGoal(); renderShotLog(); }
+function undoLastShot(){
+  if(currentShots.length===0) return;
+  currentShots.pop();
+  drawPitch(); drawGoal(); renderShotLog();
+}
 
 /* ============================================================
    SAVE / RESET MATCH
@@ -1181,8 +1428,8 @@ function resetNewMatchForm(){
   document.getElementById('mOpponent').value=''; document.getElementById('mDate').value='';
   document.getElementById('mScoreFor').value=0; document.getElementById('mScoreAgainst').value=0;
   document.getElementById('mNotes').value=''; document.getElementById('videoUrlInput').value='';
-  currentShots = []; currentEvents = []; pendingShot = null; currentVideoMeta = null; pendingGkType = null; pendingEventLocation = null;
-  renderMinutesTableBody(); drawPitch(); drawGoal(); renderShotLog(); renderEventLog(); renderVideoPlayer(); updateShotHint(); drawGkGoalPicker(); drawEventPitch(); updateGkPickerVisibility();
+  currentShots = []; currentEvents = []; pendingShot = null; currentVideoMeta = null; pendingGkType = null; pendingEventLocation = null; pitchFilterPlayerIds = new Set(); lastLoggedEventIndex = null;
+  renderMinutesTableBody(); drawPitch(); drawGoal(); renderShotLog(); renderEventLog(); renderVideoPlayer(); updateShotHint(); drawGkGoalPicker(); drawEventPitch(); updateGkPickerVisibility(); renderPitchFilterChips(); dismissRecipientPicker();
 }
 
 /* ============================================================
@@ -1257,25 +1504,50 @@ function renderMatchDetailEvents(match){
     return `<div class="event-row" ${canSeek?`onclick="seekDetailVideo('${e.timestamp}')"`:'style="cursor:default"'}><span class="ev-time">${e.timestamp||'--:--'}</span><span class="ev-player">${player?escapeHtml(player.name):'Unknown'}</span><span class="ev-type">${type?type.label:e.typeId}</span></div>`;
   }).join('')}</div>`;
 }
+let openMatch = null;
+let detailPitchFilterPlayerIds = new Set();
 function renderMatchDetailEventMap(match){
-  const events = (match.events||[]).filter(e=>e.x!==undefined && e.y!==undefined);
-  if(events.length===0) return '<div class="empty">No event locations tagged for this match.</div>';
-  const marks = events.map(e=>{
+  const hasAny = (match.events||[]).some(e=>e.x!==undefined && e.y!==undefined);
+  if(!hasAny) return '<div class="empty">No event locations tagged for this match.</div>';
+  return `
+    <div class="event-pitch-wrap">
+      <label>Show on pitch (pick players — none selected means the pitch stays clear)</label>
+      <div class="player-select-grid" id="detailPitchFilterChips" style="justify-content:center"></div>
+      <div style="text-align:center;margin-bottom:8px"><span class="btn-ghost" onclick="selectAllDetailPitchFilter()">Show all</span> <span class="btn-ghost" onclick="clearDetailPitchFilter()">Clear</span></div>
+      <svg id="detailEventPitchSvg" viewBox="0 0 400 600" style="width:100%;border-radius:8px;background:var(--pitch-mid);display:block">${fullPitchSVG()}</svg>
+      <div class="legend">${categoryLegendHTML()}</div>
+    </div>`;
+}
+function renderDetailPitchFilterChips(){
+  const el = document.getElementById('detailPitchFilterChips');
+  if(!el) return;
+  el.innerHTML = players.map(p=>`<div class="player-chip ${detailPitchFilterPlayerIds.has(p.id)?'sel':''}" onclick="toggleDetailPitchFilterPlayer('${p.id}')">${escapeHtml(p.name)}${p.number?(' #'+p.number):''}</div>`).join('');
+}
+function toggleDetailPitchFilterPlayer(id){
+  if(detailPitchFilterPlayerIds.has(id)) detailPitchFilterPlayerIds.delete(id); else detailPitchFilterPlayerIds.add(id);
+  renderDetailPitchFilterChips();
+  refreshDetailEventMap();
+}
+function selectAllDetailPitchFilter(){ detailPitchFilterPlayerIds = new Set(players.map(p=>p.id)); renderDetailPitchFilterChips(); refreshDetailEventMap(); }
+function clearDetailPitchFilter(){ detailPitchFilterPlayerIds = new Set(); renderDetailPitchFilterChips(); refreshDetailEventMap(); }
+function refreshDetailEventMap(){
+  if(!openMatch) return;
+  const svg = document.getElementById('detailEventPitchSvg');
+  if(!svg) return;
+  const marks = (openMatch.events||[]).filter(e=>e.x!==undefined && e.y!==undefined && detailPitchFilterPlayerIds.has(e.playerId)).map(e=>{
     const type = EVENT_TYPES.find(t=>t.id===e.typeId);
     const color = type ? (CATEGORY_COLORS[type.cat]||'var(--amber)') : 'var(--amber)';
     const player = players.find(p=>p.id===e.playerId);
     const note = `${player?player.name:'Unknown'} \u2022 ${type?type.label:e.typeId}${e.timestamp?(' \u2022 '+e.timestamp):''}`;
     return eventDotSVG(e.x, e.y, color, note);
   }).join('');
-  return `
-    <div class="event-pitch-wrap">
-      <svg viewBox="0 0 400 600" style="width:100%;border-radius:8px;background:var(--pitch-mid);display:block">${fullPitchSVG()}${marks}</svg>
-      <div class="legend">${categoryLegendHTML()}</div>
-    </div>`;
+  svg.innerHTML = fullPitchSVG() + marks;
 }
 function openMatchDetail(id){
   const m = matches.find(x=>x.id===id);
   if(!m) return;
+  openMatch = m;
+  detailPitchFilterPlayerIds = new Set();
   detailVideoMeta = m.videoUrl ? {type: detectVideoType(m.videoUrl)} : null;
   document.getElementById('matchListPanel').style.display='none';
   const panel = document.getElementById('matchDetailPanel');
@@ -1335,12 +1607,34 @@ function openMatchDetail(id){
     const extraEl = document.getElementById('detailVideoControlsExtra');
     if(extraEl) extraEl.innerHTML = videoControlsExtraHTML('Detail');
   }
+  renderDetailPitchFilterChips();
 }
-function closeMatchDetail(){ document.getElementById('matchListPanel').style.display='block'; document.getElementById('matchDetailPanel').style.display='none'; detailVideoMeta = null; }
-async function deleteMatch(id){
-  if(!confirm('Delete this match permanently? This cannot be undone.')) return;
+function closeMatchDetail(){ document.getElementById('matchListPanel').style.display='block'; document.getElementById('matchDetailPanel').style.display='none'; detailVideoMeta = null; openMatch = null; }
+let pendingDeleteMatchId = null;
+function deleteMatch(id){
+  pendingDeleteMatchId = id;
+  document.getElementById('deleteConfirmPasscodeInput').value = '';
+  document.getElementById('deleteConfirmMsg').textContent = '';
+  document.getElementById('deleteConfirmModalOverlay').classList.add('show');
+}
+function closeDeleteConfirm(){
+  document.getElementById('deleteConfirmModalOverlay').classList.remove('show');
+  pendingDeleteMatchId = null;
+}
+async function confirmDeleteMatch(){
+  if(!pendingDeleteMatchId) return;
+  const input = document.getElementById('deleteConfirmPasscodeInput').value;
+  const msg = document.getElementById('deleteConfirmMsg');
+  msg.textContent = '';
+  let stored;
+  try{ stored = await sbGet('passcode'); }
+  catch(e){ msg.textContent = "Couldn't reach the database. Check your connection and try again."; return; }
+  const correct = stored===null ? DEFAULT_PASSCODE : stored;
+  if(input !== correct){ msg.textContent = 'Incorrect passcode.'; return; }
+  const id = pendingDeleteMatchId;
   matches = matches.filter(m=>m.id!==id);
   await saveMatches();
+  closeDeleteConfirm();
   closeMatchDetail(); renderMatchList(); renderDashMatches();
 }
 
@@ -1370,7 +1664,7 @@ function openPlayerModal(id){
     {num: stats.minutes, lbl:'Minutes'},
     isGK ? {num: stats.saves, lbl:'Shots Saved'} : {num: stats.goals, lbl:'Goals'},
     isGK ? {num: stats.goalsConceded, lbl:'Shots Conceded'} : {num: stats.assists, lbl:'Assists'},
-    {num: stats.shotsTotal, lbl:'Total Shots'},
+    isGK ? {num: stats.shotsTotal, lbl:'Total Shots'} : {num: stats.xG.toFixed(2), lbl:'xG'},
     isGK ? {num: (stats.lbA? stats.lbAcc+'%':'-'), lbl:'Long Ball Accuracy'} : {num: (stats.shotsTotal?stats.shotAccuracy+'%':'-'), lbl:'Shot Accuracy'},
     {num: (stats.passA?stats.passAcc+'%':'-'), lbl:'Pass Accuracy'},
     isGK ? {num: stats.clearances, lbl:'Clearances'} : {num: (stats.tklA?stats.tklAcc+'%':'-'), lbl:'Tackle Success'},
