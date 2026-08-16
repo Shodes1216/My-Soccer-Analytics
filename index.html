@@ -516,6 +516,18 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="deleteTeamConfirmModalOverlay" onclick="if(event.target===this) closeDeleteTeamConfirm()">
+  <div class="modal-box" style="max-width:360px">
+    <span class="modal-close" onclick="closeDeleteTeamConfirm()">✕</span>
+    <h2 style="font-size:16px;color:var(--goal-red)">Delete <span id="deleteTeamNameLabel"></span>?</h2>
+    <div class="video-note" style="margin-bottom:10px">This permanently deletes this team's entire roster and every match, shot, event, and substitution tied to it. This can't be undone. Enter the full-access passcode to confirm.</div>
+    <label>Full-access passcode</label>
+    <input type="password" id="deleteTeamConfirmPasscodeInput" placeholder="Passcode" onkeydown="if(event.key==='Enter') confirmDeleteTeam()">
+    <button class="btn danger" style="width:100%" onclick="confirmDeleteTeam()">Delete team</button>
+    <div id="deleteTeamConfirmMsg" class="lock-error"></div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="shortcutsModalOverlay" onclick="if(event.target===this) closeShortcutsHelp()">
   <div class="modal-box" style="max-width:480px">
     <span class="modal-close" onclick="closeShortcutsHelp()">✕</span>
@@ -1415,6 +1427,18 @@ async function dbCreateTeam(name, visibleToRestricted){
   if(error) throw error;
   return id;
 }
+async function dbRenameTeam(id, name){
+  if(PREVIEW_MODE || !sbClient) return true;
+  const {error} = await sbClient.from('teams').update({name}).eq('id', id);
+  if(error) throw error;
+  return true;
+}
+async function dbDeleteTeam(id){
+  if(PREVIEW_MODE || !sbClient) return true;
+  const {error} = await sbClient.from('teams').delete().eq('id', id);
+  if(error) throw error;
+  return true;
+}
 async function dbLoadPlayers(teamId){
   if(PREVIEW_MODE || !sbClient || !teamId) return [];
   const {data, error} = await sbClient.from('players').select('*').eq('team_id', teamId);
@@ -1451,7 +1475,63 @@ function renderTeamsList(){
     <div class="roster-item">
       <div class="name" style="flex:1">${escapeHtml(t.name)}${t.id===activeTeamId?' <span style="color:var(--amber);font-weight:700;font-size:11px">(active)</span>':''}</div>
       ${t.id!==activeTeamId?`<div class="btn-ghost" style="cursor:pointer" onclick="switchActiveTeam('${t.id}')">Switch to this team</div>`:''}
+      <div class="btn-ghost" style="cursor:pointer" onclick="renameTeam('${t.id}')">Rename</div>
+      <div class="del" onclick="openDeleteTeamConfirm('${t.id}')">Delete</div>
     </div>`).join('');
+}
+async function renameTeam(id){
+  const t = teams.find(x=>x.id===id);
+  if(!t) return;
+  const newName = prompt('New name for this team:', t.name);
+  if(!newName || !newName.trim() || newName.trim()===t.name) return;
+  const trimmed = newName.trim();
+  t.name = trimmed;
+  renderTeamsList(); renderTeamSwitcher();
+  try{ await dbRenameTeam(id, trimmed); }
+  catch(e){ alert("Couldn't save the new name — check your connection and try again."); }
+}
+let pendingDeleteTeamId = null;
+function openDeleteTeamConfirm(id){
+  const t = teams.find(x=>x.id===id);
+  if(!t) return;
+  pendingDeleteTeamId = id;
+  document.getElementById('deleteTeamNameLabel').textContent = t.name;
+  document.getElementById('deleteTeamConfirmPasscodeInput').value = '';
+  document.getElementById('deleteTeamConfirmMsg').textContent = '';
+  document.getElementById('deleteTeamConfirmModalOverlay').classList.add('show');
+}
+function closeDeleteTeamConfirm(){
+  document.getElementById('deleteTeamConfirmModalOverlay').classList.remove('show');
+  pendingDeleteTeamId = null;
+}
+async function confirmDeleteTeam(){
+  if(!pendingDeleteTeamId) return;
+  const input = document.getElementById('deleteTeamConfirmPasscodeInput').value;
+  const msg = document.getElementById('deleteTeamConfirmMsg');
+  msg.textContent = '';
+  let ok = false;
+  try{
+    const {data, error} = await sbClient.rpc('verify_passcode', {check_key:'full_access_passcode', check_value: input});
+    if(error) throw error;
+    ok = data===true;
+  }
+  catch(e){ msg.textContent = "Couldn't reach the database. Check your connection and try again."; return; }
+  if(!ok){ msg.textContent = 'Incorrect passcode.'; return; }
+  const id = pendingDeleteTeamId;
+  try{ await dbDeleteTeam(id); }
+  catch(e){ msg.textContent = "Couldn't delete — check your connection and try again."; return; }
+  teams = teams.filter(t=>t.id!==id);
+  closeDeleteTeamConfirm();
+  if(activeTeamId===id){
+    activeTeamId = teams.length ? teams[0].id : null;
+    if(activeTeamId){ localStorage.setItem('matchday_active_team_id', activeTeamId); }
+    else{ localStorage.removeItem('matchday_active_team_id'); }
+    await loadAll();
+    renderRoster(); renderDashMatches(); renderMatchList(); renderPlayerChips();
+    populatePlayerSelects(); renderMinutesTableBody(); renderTeamDashboard();
+    resetNewMatchForm();
+  }
+  renderTeamSwitcher(); renderTeamsList();
 }
 async function addTeam(){
   const name = document.getElementById('newTeamName').value.trim();
