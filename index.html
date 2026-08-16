@@ -1987,9 +1987,10 @@ function setRecipient(playerId){
   const ev = lastLoggedEventId!==null ? currentEvents.find(e=>e.id===lastLoggedEventId) : null;
   if(!ev) return;
   ev.targetPlayerId = playerId;
-  renderRecipientChips(ev.playerId);
   renderEventLog();
   dbUpdateEvent(ev.id, {target_player_id: playerId}).catch(()=>{ showConnectionError(); });
+  dismissRecipientPicker();
+  selectEventPlayerChip(playerId);
 }
 /* Pitch scale: viewBox is 400 wide (68m) x 600 tall (105m) */
 function pxToMeters(dx, dy){
