@@ -21,8 +21,8 @@
     background: var(--page-bg);
     color:var(--chalk); font-family:'Inter',sans-serif; min-height:100vh;
   }
-  .app{max-width:1180px;margin:0 auto;padding:22px 20px 60px;}
-  .scoreboard{display:flex;align-items:center;justify-content:space-between;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px 20px;margin-bottom:18px;box-shadow:var(--shadow);}
+  .app{max-width:1640px;margin:0 auto;padding:16px 24px 36px;}
+  .scoreboard{display:flex;align-items:center;justify-content:space-between;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:11px 18px;margin-bottom:14px;box-shadow:var(--shadow);}
   .brand{display:flex;align-items:center;gap:12px;}
   .brand-mark{width:38px;height:38px;border-radius:9px;background:var(--amber);display:flex;align-items:center;justify-content:center;font-family:'Oswald',sans-serif;font-weight:700;color:var(--ink);font-size:16px;}
   .brand-text h1{font-family:'Inter',sans-serif;font-weight:700;font-size:19px;letter-spacing:-0.2px;margin:0;color:var(--chalk);}
@@ -31,20 +31,20 @@
   .sync-dot{width:8px;height:8px;border-radius:50%;background:var(--goal-green);box-shadow:0 0 8px var(--goal-green);}
   .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--chalk-dim);padding:7px 14px;border-radius:7px;font-size:12.5px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;}
   .btn-ghost:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-tint);}
-  .tabs{display:flex;gap:2px;margin-bottom:20px;border-bottom:1px solid var(--border);flex-wrap:wrap;background:var(--panel);border-radius:10px 10px 0 0;padding:0 6px;box-shadow:var(--shadow);}
-  .tab{font-family:'Inter',sans-serif;font-weight:600;font-size:13.5px;letter-spacing:0.1px;color:var(--chalk-dim);padding:14px 18px;cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;}
+  .tabs{display:flex;gap:2px;margin-bottom:14px;border-bottom:1px solid var(--border);flex-wrap:wrap;background:var(--panel);border-radius:10px 10px 0 0;padding:0 6px;box-shadow:var(--shadow);}
+  .tab{font-family:'Inter',sans-serif;font-weight:600;font-size:13.5px;letter-spacing:0.1px;color:var(--chalk-dim);padding:11px 16px;cursor:pointer;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;}
   .tab.active{color:var(--amber);border-color:var(--amber);}
   .tab:hover{color:var(--chalk);}
-  .panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:18px;box-shadow:var(--shadow);}
-  .panel h2{font-family:'Inter',sans-serif;font-weight:700;font-size:15.5px;letter-spacing:0.1px;margin:0 0 14px;color:var(--chalk);display:flex;align-items:center;gap:10px;}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow);}
+  .panel h2{font-family:'Inter',sans-serif;font-weight:700;font-size:15.5px;letter-spacing:0.1px;margin:0 0 11px;color:var(--chalk);display:flex;align-items:center;gap:10px;}
   .panel h2 .yard{flex:1;height:1px;background:var(--border);}
-  .grid-2{display:grid;grid-template-columns:1.1fr 1fr;gap:18px;}
+  .grid-2{display:grid;grid-template-columns:1.1fr 1fr;gap:14px;}
   @media (max-width:860px){.grid-2{grid-template-columns:1fr;}}
-  label{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--chalk-dim);display:block;margin-bottom:5px;}
-  input,select,textarea{width:100%;background:#f7f9fb;border:1px solid var(--border);color:var(--chalk);padding:9px 10px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;margin-bottom:12px;}
+  label{font-size:10.5px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:var(--chalk-dim);display:block;margin-bottom:4px;}
+  input,select,textarea{width:100%;background:#f7f9fb;border:1px solid var(--border);color:var(--chalk);padding:8px 10px;border-radius:6px;font-family:'Inter',sans-serif;font-size:13px;margin-bottom:9px;}
   input:focus,select:focus,textarea:focus{outline:2px solid var(--amber);outline-offset:1px;border-color:transparent;}
   input::placeholder{color:#9aa5b1;}
-  .row{display:flex;gap:10px;flex-wrap:wrap;}
+  .row{display:flex;gap:8px;flex-wrap:wrap;}
   .row > div{flex:1;min-width:140px;}
   .btn{font-family:'Inter',sans-serif;font-weight:700;letter-spacing:0.1px;font-size:13px;background:var(--amber);color:#fff;border:none;padding:10px 18px;border-radius:7px;cursor:pointer;transition:transform .1s, background .15s;}
   .btn:hover{background:var(--amber-dim);}
@@ -74,8 +74,16 @@
   table.stats tr:hover td.name-cell{background:var(--amber-tint);}
   .table-wrap{max-height:440px;overflow:auto;position:relative;border-radius:6px;border:1px solid var(--border);}
   .name-cell{font-weight:600;}
-  .chart-row{display:flex;gap:16px;flex-wrap:wrap;}
-  .chart-box{flex:1;min-width:260px;}
+  .chart-row{display:flex;gap:12px;flex-wrap:wrap;}
+  .chart-box{flex:1;min-width:260px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px;box-shadow:0 2px 6px rgba(20,30,45,0.05);}
+  .wizard-step{background:#f9fafc;border:1px solid var(--border);border-radius:10px;padding:13px 16px;margin-bottom:11px;}
+  .wizard-step:last-child{margin-bottom:0;}
+  .wizard-label{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:0.8px;color:var(--amber);margin-bottom:9px;padding-bottom:8px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:9px;}
+  .wizard-label .num{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--amber);color:#fff;font-size:10.5px;font-weight:800;flex:none;box-shadow:0 2px 5px rgba(47,111,237,0.35);}
+  .action-step{background:var(--amber-tint);border:1px solid var(--amber);border-radius:10px;padding:13px 16px;margin-top:11px;}
+  .side-by-side{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;}
+  @media (max-width:860px){.side-by-side{grid-template-columns:1fr;}}
+  .log-step{margin-top:11px;background:#fff;}
   .chart-box svg{width:100%;height:auto;border-radius:8px;background:var(--pitch-mid);display:block;cursor:crosshair;}
   .chart-caption{font-size:11px;color:var(--chalk-dim);text-align:center;margin-top:6px;text-transform:uppercase;letter-spacing:0.5px;}
   .shot-controls{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0;}
@@ -90,7 +98,7 @@
   .shot-log-row{display:flex;align-items:center;gap:8px;font-size:12px;padding:5px 4px;border-bottom:1px solid var(--border);}
   .shot-log-row .tag{width:9px;height:9px;border-radius:50%;flex:none;}
   .shot-log-row .rm{margin-left:auto;color:var(--goal-red);cursor:pointer;font-size:11px;}
-  .match-card{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--border);border-left:4px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:8px;cursor:pointer;transition:border-color .15s;}
+  .match-card{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid var(--border);border-left:4px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:6px;cursor:pointer;transition:border-color .15s;}
   .match-card:hover{border-color:var(--amber);border-left-color:var(--amber);}
   .match-card.result-border-W{border-left-color:var(--goal-green);}
   .match-card.result-border-L{border-left-color:var(--goal-red);}
@@ -102,18 +110,18 @@
   .result-W{background:rgba(63,168,96,0.12);color:var(--goal-green);}
   .result-L{background:rgba(211,73,74,0.12);color:var(--goal-red);}
   .result-D{background:var(--amber-tint);color:var(--amber);}
-  .player-select-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+  .player-select-grid{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:12px;}
   .player-chip{padding:7px 13px;border-radius:20px;border:1px solid var(--border);cursor:pointer;font-size:12.5px;font-weight:600;background:#f7f9fb;}
   .player-chip.sel{background:var(--amber);color:#fff;border-color:var(--amber);}
-  .stat-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;margin-bottom:16px;}
-  .stat-card{background:#f7f9fb;border:1px solid var(--border);border-radius:8px;padding:14px 12px;text-align:center;}
+  .stat-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:12px;}
+  .stat-card{background:#f7f9fb;border:1px solid var(--border);border-radius:8px;padding:12px 11px;text-align:center;}
   .stat-card .num{font-family:'Inter',sans-serif;font-size:24px;font-weight:800;color:var(--amber);line-height:1;}
   .stat-card .lbl{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.6px;color:var(--chalk-dim);margin-top:6px;}
-  .empty{color:var(--chalk-dim);font-size:13px;text-align:center;padding:30px 10px;}
+  .empty{color:var(--chalk-dim);font-size:13px;text-align:center;padding:20px 10px;}
   .view{display:none;}
   .view.active{display:block;}
   .back-link{color:var(--amber);font-size:12px;font-weight:600;cursor:pointer;margin-bottom:12px;display:inline-block;}
-  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11px;color:var(--chalk-dim);margin-top:8px;}
+  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--chalk-dim);margin-top:6px;}
   .legend span{display:inline-flex;align-items:center;gap:6px;}
   .legend .dot{width:10px;height:10px;border-radius:50%;}
   /* video */
@@ -130,6 +138,8 @@
   .ev-player{font-weight:600;width:120px;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .ev-type{flex:1;color:var(--chalk-dim);}
   .ev-rm{color:var(--goal-red);cursor:pointer;flex:none;}
+  .ev-match{font-weight:600;width:170px;flex:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--chalk);}
+  .type-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;flex:none;}
   .event-log-wrap{max-height:220px;overflow:auto;margin-top:10px;border-top:1px solid var(--border);}
   .event-pitch-wrap{max-width:300px;margin:10px auto;}
   .event-pitch-wrap label{text-align:center;}
@@ -137,7 +147,7 @@
   /* player modal */
   .modal-overlay{display:none;position:fixed;inset:0;background:rgba(20,30,45,0.55);z-index:100;align-items:flex-start;justify-content:center;overflow:auto;padding:30px 16px;}
   .modal-overlay.show{display:flex;}
-  .modal-box{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:24px;max-width:960px;width:100%;position:relative;box-shadow:0 24px 60px rgba(20,30,45,0.25);}
+  .modal-box{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;max-width:1200px;width:100%;position:relative;box-shadow:0 24px 60px rgba(20,30,45,0.25);}
   .modal-close{position:absolute;top:14px;right:18px;font-size:18px;color:var(--chalk-dim);cursor:pointer;}
   .modal-close:hover{color:var(--amber);}
   .rating-badge{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:50%;background:var(--amber);color:#fff;font-family:'Inter',sans-serif;font-weight:800;font-size:16px;flex:none;}
@@ -159,7 +169,8 @@
   .qt-cat{margin-top:10px;}
   .qt-cat-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--chalk-dim);margin-bottom:5px;}
   .qt-row{display:flex;flex-wrap:wrap;gap:6px;}
-  .qt-btn{border:1px solid var(--border);border-radius:20px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;color:var(--chalk);transition:transform .06s;}
+  .qt-btn{border:1px solid var(--border);border-radius:20px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;color:var(--chalk);transition:transform .06s, opacity .15s;}
+  #quickTagGrid.locked-until-pitch{opacity:0.35;pointer-events:none;filter:grayscale(0.4);}
   .qt-btn:active{transform:scale(0.95);}
   .qt-btn:hover{border-color:currentColor;}
   .video-speed-row{display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap;}
@@ -168,6 +179,14 @@
   .speed-btn:hover{border-color:var(--amber);color:var(--amber);}
   .jump-btn{border:1px solid var(--border);background:#fff;color:var(--chalk-dim);font-size:12px;font-weight:700;padding:5px 12px;border-radius:6px;cursor:pointer;}
   .jump-btn:hover{border-color:var(--amber);color:var(--amber);}
+  .key-badge{display:inline-flex;align-items:center;justify-content:center;min-width:16px;height:16px;padding:0 3px;border-radius:4px;background:var(--chalk-dim);color:#fff;font-size:9.5px;font-weight:800;margin-right:5px;border:1px solid transparent;font-family:'Inter',sans-serif;}
+  .player-chip .key-badge{background:var(--chalk-dim);}
+  .shortcuts-btn{font-size:11px;color:var(--chalk-dim);cursor:pointer;text-decoration:underline;}
+  .shortcuts-btn:hover{color:var(--amber);}
+  .live-gate.locked{opacity:0.45;pointer-events:none;filter:grayscale(0.35);}
+  .live-gate-message{display:none;}
+  .live-gate.locked .live-gate-message{display:block;}
+  .btn.small.secondary{padding:6px 10px;font-size:11px;}
 </style>
 </head>
 <body>
@@ -193,6 +212,7 @@
       <div class="brand-text"><h1>Matchday</h1><span>Team Analytics &amp; Video</span></div>
     </div>
     <div class="sync-row">
+      <select id="teamSwitcher" onchange="switchActiveTeam(this.value)" style="display:none;width:auto;margin:0;padding:6px 8px;font-size:12px;background:var(--panel);border-radius:6px"></select>
       <span class="passcode-link" onclick="openChangePasscode()">Change passcode</span>
       <button class="btn-ghost" onclick="refreshAll(true)">Refresh data</button>
     </div>
@@ -204,6 +224,7 @@
     <div class="tab" data-view="matches">Match History</div>
     <div class="tab" data-view="players">Players</div>
     <div class="tab" data-view="team">Team</div>
+    <div class="tab" data-view="search">Search</div>
   </div>
 
   <!-- ===================== DASHBOARD ===================== -->
@@ -241,19 +262,15 @@
         <div style="max-width:100px"><label>Opp. score</label><input type="number" id="mScoreAgainst" min="0" value="0"></div>
         <div><label>Notes (optional)</label><input id="mNotes" placeholder="Weather, lineup notes, etc."></div>
       </div>
-    </div>
-
-    <div class="panel">
-      <h2>Game Film<span class="yard"></span></h2>
-      <div class="video-row">
-        <div><label>Video link (YouTube, Vimeo, or a direct video URL)</label><input id="videoUrlInput" placeholder="https://youtube.com/watch?v=..."></div>
-        <div style="flex:none"><button class="btn secondary" onclick="loadVideo()" style="margin-bottom:12px">Load video</button></div>
+      <div class="video-note" style="margin-bottom:6px">Saving to team: <strong id="matchTeamLabel">—</strong></div>
+      <button class="btn" id="startMatchBtn" onclick="startMatch()">Start Match</button>
+      <div id="liveMatchBanner" style="display:none;align-items:center;gap:12px;background:var(--amber-tint);border:1px solid var(--amber);border-radius:8px;padding:10px 14px;margin-top:4px">
+        <span id="liveStatusDot" class="sync-dot"></span>
+        <span id="liveStatusText" style="font-size:12.5px;font-weight:600;color:var(--amber-dim)">Live</span>
+        <span id="liveMatchLabel" style="font-size:12.5px;color:var(--chalk-dim);flex:1"></span>
+        <button class="btn secondary small" id="liveMatchResumeBtn" style="display:none" onclick="">Resume</button>
       </div>
-      <label class="file-btn" for="videoFileInput">Load a local video file instead</label>
-      <input type="file" id="videoFileInput" accept="video/*" style="display:none" onchange="loadLocalVideo(event)">
-      <div id="videoPlayerWrap"></div>
-      <div id="videoControlsExtra"></div>
-      <div class="video-note">A linked video URL is saved with the match, so your assistant coach can open it too. A local file only plays on this device for this session — it can't be saved or shared, since it never leaves your computer.</div>
+      <div class="video-note">Fill in the opponent and date, then hit Start Match — this creates the shared live match record so you and your assistant coach can both tag it at once, in real time, from separate devices.</div>
     </div>
 
     <div class="panel">
@@ -263,31 +280,131 @@
       </div>
     </div>
 
-    <div class="panel">
-      <h2>Shot Chart<span class="yard"></span></h2>
-      <div class="shot-controls">
-        <select id="shotPlayer" class="player-select"></select>
-        <select id="shotType">
-          <option value="right">Right Foot</option>
-          <option value="left">Left Foot</option>
-          <option value="header">Header</option>
-        </select>
-        <select id="shotSituation">
-          <option value="open_play">Open Play</option>
-          <option value="corner">Corner Kick</option>
-          <option value="free_kick">Free Kick</option>
-          <option value="throw_in">Throw-In</option>
-        </select>
-        <div class="outcome-btns">
-          <button class="outcome-btn" data-o="goal" onclick="setOutcome('goal')">⚽ Goal</button>
-          <button class="outcome-btn" data-o="saved" onclick="setOutcome('saved')">🧤 Saved / Blocked</button>
-          <button class="outcome-btn" data-o="missed" onclick="setOutcome('missed')">✕ Missed</button>
+    <div class="panel live-gate">
+      <h2>Match Events<span class="yard"></span></h2>
+      <div class="live-gate-message video-note" style="color:var(--goal-red);font-weight:600">⚠ Start or resume the match above to begin tagging.</div>
+      <div class="video-note">Tap a player, then tap what happened — it logs instantly (with the video's current time, if one's loaded). No dropdowns, no extra clicks. <span class="shortcuts-btn" onclick="openShortcutsHelp()">Keyboard shortcuts</span></div>
+
+      <div class="side-by-side">
+        <div class="wizard-step">
+          <div class="wizard-label">🎬 Game Film</div>
+          <div class="video-row">
+            <div><label>Video link (YouTube, Vimeo, or a direct video URL)</label><input id="videoUrlInput" placeholder="https://youtube.com/watch?v=..."></div>
+            <div style="flex:none"><button class="btn secondary" onclick="loadVideo()" style="margin-bottom:12px">Load video</button></div>
+          </div>
+          <label class="file-btn" for="videoFileInput">Load a local video file instead</label>
+          <input type="file" id="videoFileInput" accept="video/*" style="display:none" onchange="loadLocalVideo(event)">
+          <div id="videoPlayerWrap"></div>
+          <div id="videoControlsExtra"></div>
+          <div class="video-note">A linked video URL is saved with the match, so your assistant coach can open it too. A local file only plays on this device for this session — it can't be saved or shared, since it never leaves your computer. Click any event's timestamp below to jump the video straight to that moment.</div>
+        </div>
+        <div class="wizard-step">
+          <div class="wizard-label">🔁 Starting Lineup &amp; Substitutions</div>
+          <div class="video-note">Optional — mark who started and log subs as they happen, and minutes fill in automatically on the Minutes Played panel. You can still edit any player's minutes by hand afterward.</div>
+          <div class="row">
+            <div style="max-width:160px"><label>Match length (min)</label><input type="number" id="mMatchLength" value="90" min="1"></div>
+          </div>
+          <label>Who started?</label>
+          <div class="player-select-grid" id="startingLineupChips"></div>
+          <div class="shot-controls" style="margin-top:6px">
+            <select id="subPlayer" class="player-select"></select>
+            <input id="subMinute" type="number" placeholder="Minute" style="max-width:90px;margin:0" min="0">
+            <button class="btn secondary" onclick="logSub('in')">Sub In</button>
+            <button class="btn secondary" onclick="logSub('out')">Sub Out</button>
+            <button class="btn" onclick="recalcMinutesFromSubs()">Calculate minutes</button>
+          </div>
+          <div class="shot-log" id="subsLog"></div>
         </div>
       </div>
-      <div class="hint" id="shotHint">Pick a player, shot type, situation, and outcome, then click the pitch to mark where the shot was taken. Hover any marked shot afterward for its details.</div>
-      <div class="chart-row">
-        <div class="chart-box"><svg id="pitchSvg" viewBox="0 0 400 300"></svg><div class="chart-caption">Shot origin (attacking half)</div></div>
-        <div class="chart-box"><svg id="goalSvg" viewBox="0 0 300 230"></svg><div class="chart-caption">Where the ball ended up</div></div>
+
+      <div class="side-by-side">
+        <div>
+          <div class="wizard-step">
+            <div class="wizard-label"><span class="num">1</span>Tagging as</div>
+            <div class="player-select-grid" id="eventPlayerChips"></div>
+          </div>
+          <div class="wizard-step">
+            <div class="wizard-label"><span class="num">3</span>Tap what happened <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--chalk-dim)">(unlocks once you've marked the pitch)</span></div>
+            <div id="quickTagGrid"></div>
+            <div id="pitchRequiredHint" class="video-note" style="display:none;color:var(--amber-dim);font-weight:600;margin-bottom:10px">⚠ Mark where it happened on the pitch first — see step 2, on the right.</div>
+            <div class="shot-controls" style="margin-top:10px">
+              <button class="btn-ghost" onclick="repeatLastEvent()">Repeat last <span class="key-badge" style="background:var(--chalk-dim)">.</span></button>
+              <button class="btn-ghost" onclick="undoLastEvent()">Undo last <span class="key-badge" style="background:var(--chalk-dim)">,</span></button>
+              <span style="font-size:11px;color:var(--chalk-dim)">Manual timestamp (YouTube/Vimeo only):</span>
+              <input id="eventTimestamp" placeholder="mm:ss" style="max-width:90px;margin:0">
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="wizard-step">
+            <div class="wizard-label"><span class="num">2</span>Where on the pitch <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--goal-red)">(required — tap here first)</span></div>
+            <div class="event-pitch-wrap" style="margin:0 auto">
+              <label>Show on pitch (pick players — none selected means the pitch stays clear)</label>
+              <div class="player-select-grid" id="pitchFilterChips" style="justify-content:center"></div>
+              <div style="text-align:center;margin-bottom:8px"><span class="btn-ghost" onclick="selectAllPitchFilter()">Show all</span> <span class="btn-ghost" onclick="clearPitchFilter()">Clear</span></div>
+              <div class="video-note" style="text-align:center">Click anywhere on the pitch to mark where the next event happened — this unlocks the buttons on the left.</div>
+              <svg id="eventPitchSvg" viewBox="0 0 400 600" style="width:100%;border-radius:8px;background:var(--pitch-mid);cursor:crosshair;display:block"></svg>
+              <div class="legend" id="categoryLegend"></div>
+            </div>
+          </div>
+          <div id="gkGoalPicker" class="action-step" style="display:none">
+            <label>Mark where this shot went (optional, for goalie shot maps)</label>
+            <svg id="gkGoalSvg" viewBox="0 0 300 230" style="width:100%;max-width:320px;display:block;margin:0 auto;border-radius:8px;background:var(--pitch-mid);cursor:crosshair"></svg>
+            <div style="text-align:center;margin-top:8px"><span class="btn-ghost" onclick="logGkEventWithoutLocation()">Log without marking a location</span></div>
+          </div>
+          <div id="recipientPicker" class="action-step" style="display:none">
+            <label style="margin-bottom:6px">Who received it? <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional — builds the pass network)</span></label>
+            <div class="player-select-grid" id="recipientChips"></div>
+            <label style="margin-top:10px;margin-bottom:6px">Where did it land? <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional — measures pass distance)</span></label>
+            <svg id="passDistanceSvg" viewBox="0 0 400 600" style="width:100%;max-width:260px;display:block;margin:0 auto;border-radius:8px;background:var(--pitch-mid);cursor:crosshair"></svg>
+            <div style="text-align:center;margin-top:8px"><span class="btn-ghost" onclick="dismissRecipientPicker()">Done / Skip</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="wizard-step log-step">
+        <div class="wizard-label" style="color:var(--chalk-dim)">Logged this match</div>
+        <div class="event-log-wrap" id="eventLog"></div>
+      </div>
+
+    </div>
+
+    <div class="panel live-gate">
+      <h2>Shot Chart<span class="yard"></span></h2>
+      <div class="side-by-side">
+        <div class="wizard-step">
+          <div class="wizard-label"><span class="num">1</span>Who, how, and why</div>
+          <div class="shot-controls" style="margin:0">
+            <select id="shotPlayer" class="player-select"></select>
+            <select id="shotType">
+              <option value="right">Right Foot</option>
+              <option value="left">Left Foot</option>
+              <option value="header">Header</option>
+            </select>
+            <select id="shotSituation">
+              <option value="open_play">Open Play</option>
+              <option value="corner">Corner Kick</option>
+              <option value="free_kick">Free Kick</option>
+              <option value="throw_in">Throw-In</option>
+            </select>
+          </div>
+        </div>
+        <div class="wizard-step">
+          <div class="wizard-label"><span class="num">2</span>Outcome</div>
+          <div class="outcome-btns">
+            <button class="outcome-btn" data-o="goal" onclick="setOutcome('goal')"><span class="key-badge">Q</span>⚽ Goal</button>
+            <button class="outcome-btn" data-o="saved" onclick="setOutcome('saved')"><span class="key-badge">W</span>🧤 Saved / Blocked</button>
+            <button class="outcome-btn" data-o="missed" onclick="setOutcome('missed')"><span class="key-badge">Z</span>✕ Missed</button>
+          </div>
+        </div>
+      </div>
+      <div class="wizard-step">
+        <div class="wizard-label"><span class="num">3</span>Click the pitch, then the goal</div>
+        <div class="hint" id="shotHint" style="margin:0 0 10px">Pick a player, shot type, situation, and outcome above, then click the pitch to mark where the shot was taken. Hover any marked shot afterward for its details.</div>
+        <div class="chart-row">
+          <div class="chart-box"><svg id="pitchSvg" viewBox="0 0 400 300"></svg><div class="chart-caption">Shot origin (attacking half)</div></div>
+          <div class="chart-box"><svg id="goalSvg" viewBox="0 0 300 230"></svg><div class="chart-caption">Where the ball ended up</div></div>
+        </div>
       </div>
       <div class="legend">
         <span><span class="dot" style="background:var(--goal-green)"></span> Goal</span>
@@ -298,40 +415,8 @@
       <div class="shot-log" id="shotLog"></div>
     </div>
 
-    <div class="panel">
-      <h2>Match Events<span class="yard"></span></h2>
-      <div class="video-note">Tap a player, then tap what happened — it logs instantly (with the video's current time, if one's loaded). No dropdowns, no extra clicks.</div>
-      <label style="margin-top:4px">Tagging as</label>
-      <div class="player-select-grid" id="eventPlayerChips"></div>
-      <div id="quickTagGrid"></div>
-      <div class="shot-controls" style="margin-top:10px">
-        <span style="font-size:11px;color:var(--chalk-dim)">Manual timestamp (only needed for YouTube/Vimeo, where we can't read the clock automatically):</span>
-        <input id="eventTimestamp" placeholder="mm:ss" style="max-width:90px;margin:0">
-        <button class="btn-ghost" onclick="undoLastEvent()">Undo last</button>
-      </div>
-      <div class="event-pitch-wrap">
-        <label>Show on pitch (pick players — none selected means the pitch stays clear)</label>
-        <div class="player-select-grid" id="pitchFilterChips" style="justify-content:center"></div>
-        <div style="text-align:center;margin-bottom:8px"><span class="btn-ghost" onclick="selectAllPitchFilter()">Show all</span> <span class="btn-ghost" onclick="clearPitchFilter()">Clear</span></div>
-        <div class="video-note" style="text-align:center">Click the pitch to mark where the next tagged event happened (optional).</div>
-        <svg id="eventPitchSvg" viewBox="0 0 400 600" style="width:100%;border-radius:8px;background:var(--pitch-mid);cursor:crosshair;display:block"></svg>
-        <div class="legend" id="categoryLegend"></div>
-      </div>
-      <div id="gkGoalPicker" style="display:none;margin-top:12px;max-width:320px">
-        <label>Mark where this shot went (optional, for goalie shot maps)</label>
-        <svg id="gkGoalSvg" viewBox="0 0 300 230" style="width:100%;border-radius:8px;background:var(--pitch-mid);cursor:crosshair;display:block"></svg>
-        <button class="btn-ghost" onclick="logGkEventWithoutLocation()">Log without marking a location</button>
-      </div>
-      <div class="event-log-wrap" id="eventLog"></div>
-      <div id="recipientPicker" style="display:none;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
-        <label style="margin-bottom:6px">Who received it? <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional — builds the pass network)</span></label>
-        <div class="player-select-grid" id="recipientChips"></div>
-        <span class="btn-ghost" onclick="dismissRecipientPicker()">Skip</span>
-      </div>
-    </div>
-
-    <button class="btn" onclick="saveMatch()">Save match</button>
-    <button class="btn secondary" onclick="resetNewMatchForm()">Clear form</button>
+    <button class="btn" onclick="finishMatch()">Finish &amp; Save</button>
+    <button class="btn secondary" onclick="clearOrLeaveMatch()">Clear / Leave</button>
   </div>
 
   <!-- ===================== MATCH HISTORY ===================== -->
@@ -357,7 +442,33 @@
 
   <!-- ===================== TEAM DASHBOARD ===================== -->
   <div class="view" id="view-team">
+    <div class="panel" id="manageTeamsPanel" style="display:none">
+      <h2>Manage Teams<span class="yard"></span></h2>
+      <div class="row">
+        <div><label>New team name</label><input id="newTeamName" placeholder="e.g. Ironwood U12" onkeydown="if(event.key==='Enter') addTeam()"></div>
+      </div>
+      <button class="btn" onclick="addTeam()">Add team</button>
+      <div style="height:12px"></div>
+      <div class="roster-list" id="teamsList"></div>
+    </div>
     <div id="teamDashboardContent"></div>
+  </div>
+
+  <!-- ===================== SEARCH ===================== -->
+  <div class="view" id="view-search">
+    <div class="panel">
+      <h2>Search Events<span class="yard"></span></h2>
+      <div class="row">
+        <div><label>Player</label><select id="searchPlayer" onchange="renderSearchResults()"><option value="all">All players</option></select></div>
+        <div><label>Match</label><select id="searchMatch" onchange="renderSearchResults()"><option value="all">All matches</option></select></div>
+        <div><label>Event type</label><select id="searchType" onchange="renderSearchResults()"><option value="all">All event types</option></select></div>
+      </div>
+      <span class="btn-ghost" onclick="clearSearchFilters()">Clear filters</span>
+    </div>
+    <div class="panel">
+      <h2>Results <span id="searchResultCount" style="color:var(--chalk-dim);font-weight:400;font-size:12px"></span><span class="yard"></span></h2>
+      <div id="searchResults"></div>
+    </div>
   </div>
 
 </div>
@@ -372,12 +483,24 @@
 <div class="modal-overlay" id="passcodeModalOverlay" onclick="if(event.target===this) closeChangePasscode()">
   <div class="modal-box" style="max-width:360px">
     <span class="modal-close" onclick="closeChangePasscode()">✕</span>
-    <h2 style="font-size:16px">Change Team Passcode</h2>
-    <label>New passcode</label>
-    <input type="password" id="newPasscodeInput" placeholder="New passcode">
-    <button class="btn" style="width:100%" onclick="submitNewPasscode()">Save new passcode</button>
-    <div id="passcodeChangeMsg" class="lock-error"></div>
-    <div class="video-note">Anyone using this app will need the new passcode next time they open it.</div>
+    <div id="adminGateStep">
+      <h2 style="font-size:16px">Head Coach Access</h2>
+      <div class="video-note" style="margin-bottom:10px">Changing the team passcode is restricted. Enter the admin passcode to continue.</div>
+      <label>Admin passcode</label>
+      <input type="password" id="adminGateInput" placeholder="Admin passcode" onkeydown="if(event.key==='Enter') verifyAdminGate()">
+      <button class="btn" style="width:100%" onclick="verifyAdminGate()">Verify</button>
+      <div id="adminGateMsg" class="lock-error"></div>
+    </div>
+    <div id="passcodeChangeStep" style="display:none">
+      <h2 style="font-size:16px">Change Passcodes</h2>
+      <label>New team passcode <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--chalk-dim)">(other coaches — sees only the default team)</span></label>
+      <input type="password" id="newPasscodeInput" placeholder="Leave blank to keep current">
+      <label>New full-access passcode <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--chalk-dim)">(you two — sees every team)</span></label>
+      <input type="password" id="newFullAccessPasscodeInput" placeholder="Leave blank to keep current">
+      <button class="btn" style="width:100%" onclick="submitNewPasscode()">Save changes</button>
+      <div id="passcodeChangeMsg" class="lock-error"></div>
+      <div class="video-note">Anyone using this app will need the new passcode next time they open it.</div>
+    </div>
   </div>
 </div>
 
@@ -393,6 +516,17 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="shortcutsModalOverlay" onclick="if(event.target===this) closeShortcutsHelp()">
+  <div class="modal-box" style="max-width:480px">
+    <span class="modal-close" onclick="closeShortcutsHelp()">✕</span>
+    <h2 style="font-size:16px">Keyboard Shortcuts</h2>
+    <div class="video-note" style="margin-bottom:10px">Only active on the New Match tab, and only when you're not typing in a text field.</div>
+    <div id="shortcutsList"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="matchday-config.js"></script>
 <script>
 /* ============================================================
    EVENT TYPE DEFINITIONS
@@ -433,6 +567,43 @@ const EVENT_TYPES = [
 ];
 const EVENT_CATS = ['Shooting','Passing','Possession','Defending','Discipline','Goalkeeping'];
 const CATEGORY_COLORS = {Shooting:'#e8a33d', Passing:'#4fc3f7', Possession:'#3fa860', Defending:'#d3494a', Discipline:'#f2c94c', Goalkeeping:'#9b6bd1'};
+/* Mnemonic hotkeys — the letter matches the action's name wherever possible
+   (G=Goal, P=Pass, T=Tackle, etc). For actions with a clear success/fail or
+   won/lost counterpart, the same letter does both: plain key = the positive
+   one, Shift+key = the negative one. This covers every event type with only
+   22 letters to learn instead of 32. */
+const HOTKEY_MAP = {
+  g: {plain:'goal'},
+  s: {plain:'shot', shift:'shot_on_target'},
+  h: {plain:'headed_shot'},
+  p: {plain:'pass_success', shift:'pass_fail'},
+  c: {plain:'cross_success', shift:'cross_fail'},
+  l: {plain:'longball_success', shift:'longball_fail'},
+  b: {plain:'big_chance_created'},
+  a: {plain:'assist'},
+  d: {plain:'dribble_success', shift:'dribble_fail'},
+  x: {plain:'dispossessed'},
+  t: {plain:'tackle_won', shift:'tackle_lost'},
+  i: {plain:'interception'},
+  r: {plain:'recovery'},
+  k: {plain:'clearance'},
+  o: {plain:'block'},
+  j: {plain:'aerial_won', shift:'aerial_lost'},
+  n: {plain:'ground_won', shift:'ground_lost'},
+  f: {plain:'foul_committed', shift:'foul_won'},
+  y: {plain:'yellow_card', shift:'red_card'},
+  e: {plain:'offside'},
+  v: {plain:'save'},
+  m: {plain:'goal_conceded'}
+};
+const SHOT_OUTCOME_HOTKEYS = {q:'goal', w:'saved', z:'missed'};
+function hotkeyBadgeForType(typeId){
+  for(const k in HOTKEY_MAP){
+    if(HOTKEY_MAP[k].plain===typeId) return k.toUpperCase();
+    if(HOTKEY_MAP[k].shift===typeId) return '\u21e7'+k.toUpperCase();
+  }
+  return null;
+}
 function eventTypeSelectHTML(){
   return EVENT_CATS.map(cat=>{
     const opts = EVENT_TYPES.filter(t=>t.cat===cat).map(t=>`<option value="${t.id}">${t.label}</option>`).join('');
@@ -481,6 +652,29 @@ function onEventPitchClick(evt){
   marker.setAttribute('id','eventPendingMark'); marker.setAttribute('cx', pendingEventLocation.x); marker.setAttribute('cy', pendingEventLocation.y);
   marker.setAttribute('r', 8); marker.setAttribute('fill', 'var(--amber)'); marker.setAttribute('stroke', '#fff'); marker.setAttribute('stroke-width', 1.5);
   svg.appendChild(marker);
+  updateQuickTagLockState();
+}
+function pitchLocationReady(){ return pendingEventLocation !== null && pendingEventLocation !== undefined; }
+function updateQuickTagLockState(){
+  const grid = document.getElementById('quickTagGrid');
+  const hint = document.getElementById('pitchRequiredHint');
+  if(!grid) return;
+  if(pitchLocationReady()){
+    grid.classList.remove('locked-until-pitch');
+    if(hint) hint.style.display = 'none';
+  } else {
+    grid.classList.add('locked-until-pitch');
+    if(hint) hint.style.display = 'block';
+  }
+}
+function flashPitchRequired(){
+  const hint = document.getElementById('pitchRequiredHint');
+  if(hint){
+    hint.style.display = 'block';
+    hint.scrollIntoView({behavior:'smooth', block:'center'});
+    hint.style.color = 'var(--goal-red)';
+    setTimeout(()=>{ hint.style.color = 'var(--amber-dim)'; }, 1200);
+  }
 }
 let pitchFilterPlayerIds = new Set();
 function renderPitchFilterChips(){
@@ -574,12 +768,14 @@ function computeStatsForPlayer(shots, events, minutes){
   const aerW=ev('aerial_won'), aerL=ev('aerial_lost');
   const gndW=ev('ground_won'), gndL=ev('ground_lost');
   const pct = (a,b)=> b>0 ? Math.round((a/b)*100) : 0;
+  const passDistances = events.filter(e=>e.typeId==='pass_success').map(calcPassDistance).filter(d=>d!==null);
+  const avgPassDistance = passDistances.length ? passDistances.reduce((a,b)=>a+b,0)/passDistances.length : 0;
   return {
     minutes: minutes||0, goals, assists: ev('assist'),
     shotsTotal: total, shotsOnTarget: onTarget, shotsOffTarget: missed,
     shotAccuracy: pct(onTarget,total), xG: Math.round(totalXG*100)/100,
     headedShots: ev('headed_shot'),
-    passC, passA: passC+passF, passAcc: pct(passC,passC+passF),
+    passC, passA: passC+passF, passAcc: pct(passC,passC+passF), avgPassDistance: Math.round(avgPassDistance*10)/10,
     bigChancesCreated: ev('big_chance_created'),
     crossC, crossA: crossC+crossF, crossAcc: pct(crossC,crossC+crossF),
     lbC, lbA: lbC+lbF, lbAcc: pct(lbC,lbC+lbF),
@@ -668,6 +864,7 @@ const STAT_COLUMNS = [
   {label:'Hdr', title:'Headed Shots', get:s=>s.headedShots},
   {label:'Passes', title:'Completed / Attempted', get:s=>`${s.passC}/${s.passA}`},
   {label:'Pass%', get:s=>s.passA? s.passAcc+'%':'-'},
+  {label:'Avg Dist', title:'Average completed pass distance (meters) — only counts passes with both a start and end point marked', get:s=>s.avgPassDistance?s.avgPassDistance+'m':'-'},
   {label:'BCC', title:'Big Chances Created', get:s=>s.bigChancesCreated},
   {label:'Crosses', title:'Completed / Attempted', get:s=>`${s.crossC}/${s.crossA}`},
   {label:'Cross%', get:s=>s.crossA? s.crossAcc+'%':'-'},
@@ -874,8 +1071,8 @@ function renderTeamDashboard(){
    in client-side code — the anon key only allows what your Row
    Level Security policies permit (see the setup SQL provided).
 ============================================================ */
-const SUPABASE_URL = 'https://kycohtzetjmkysrljusj.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt5Y29odHpldGpta3lzcmxqdXNqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQzMjI5MTcsImV4cCI6MjA5OTg5ODkxN30.dA9Ivl8ZCIkYCG9YEnGoLGhQRptONeCOCfgwesCy9AU';
+const SUPABASE_URL = (typeof MATCHDAY_CONFIG !== 'undefined' && MATCHDAY_CONFIG.SUPABASE_URL) || 'YOUR_SUPABASE_URL_HERE';
+const SUPABASE_ANON_KEY = (typeof MATCHDAY_CONFIG !== 'undefined' && MATCHDAY_CONFIG.SUPABASE_ANON_KEY) || 'YOUR_SUPABASE_ANON_KEY_HERE';
 const PREVIEW_MODE = SUPABASE_URL.indexOf('YOUR_') === 0 || !SUPABASE_URL;
 
 const sbHeaders = {
@@ -904,20 +1101,438 @@ async function sbSet(key, value){
 let players = [];
 let matches = [];
 let storageOK = true;
+const sbClient = (typeof supabase !== 'undefined' && !PREVIEW_MODE) ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+/* ---- Live match data layer (individual rows, so two coaches can tag the
+   same match at once without overwriting each other) ---- */
+function rowToEvent(r){
+  const e = {id:r.id, playerId:r.player_id, typeId:r.type_id, timestamp:r.timestamp};
+  if(r.x!==null && r.x!==undefined){ e.x = r.x; e.y = r.y; }
+  if(r.goal_x!==null && r.goal_x!==undefined){ e.goalX = r.goal_x; e.goalY = r.goal_y; }
+  if(r.target_player_id) e.targetPlayerId = r.target_player_id;
+  if(r.end_x!==null && r.end_x!==undefined){ e.endX = r.end_x; e.endY = r.end_y; }
+  return e;
+}
+function rowToShot(r){
+  return {id:r.id, playerId:r.player_id, outcome:r.outcome, originX:r.origin_x, originY:r.origin_y, goalX:r.goal_x, goalY:r.goal_y, shotType:r.shot_type, situation:r.situation};
+}
+function rowToSub(r){
+  return {id:r.id, playerId:r.player_id, type:r.type, minute:r.minute};
+}
+async function dbLoadFullMatches(){
+  if(PREVIEW_MODE || !sbClient || !activeTeamId) return matches||[];
+  const mRes = await sbClient.from('matches').select('*').eq('team_id', activeTeamId);
+  if(mRes.error) throw mRes.error;
+  const matchRows = mRes.data||[];
+  const ids = matchRows.map(m=>m.id);
+  let evRows=[], shotRows=[], subRows=[];
+  if(ids.length){
+    const [eRes, sRes, subRes] = await Promise.all([
+      sbClient.from('match_events').select('*').in('match_id', ids),
+      sbClient.from('match_shots').select('*').in('match_id', ids),
+      sbClient.from('match_subs').select('*').in('match_id', ids)
+    ]);
+    if(eRes.error) throw eRes.error;
+    if(sRes.error) throw sRes.error;
+    if(subRes.error) throw subRes.error;
+    evRows = eRes.data||[]; shotRows = sRes.data||[]; subRows = subRes.data||[];
+  }
+  const evByMatch = {}, shotByMatch = {}, subByMatch = {};
+  evRows.forEach(r=>{ (evByMatch[r.match_id]=evByMatch[r.match_id]||[]).push(rowToEvent(r)); });
+  shotRows.forEach(r=>{ (shotByMatch[r.match_id]=shotByMatch[r.match_id]||[]).push(rowToShot(r)); });
+  subRows.forEach(r=>{ (subByMatch[r.match_id]=subByMatch[r.match_id]||[]).push(rowToSub(r)); });
+  return matchRows.map(r=>({
+    id:r.id, date:r.date, opponent:r.opponent, homeAway:r.home_away,
+    scoreFor:r.score_for||0, scoreAgainst:r.score_against||0, notes:r.notes||'',
+    matchLengthMinutes:r.match_length_minutes||90, startingPlayerIds:r.starting_player_ids||[],
+    minutesByPlayer:r.minutes_by_player||{}, videoUrl:r.video_url||'', status:r.status||'final',
+    events: evByMatch[r.id]||[], shots: shotByMatch[r.id]||[], substitutions: subByMatch[r.id]||[]
+  }));
+}
+async function dbCreateMatch(m){
+  if(PREVIEW_MODE || !sbClient) return m.id;
+  const {error} = await sbClient.from('matches').insert({
+    id:m.id, team_id: activeTeamId, date:m.date, opponent:m.opponent, home_away:m.homeAway,
+    score_for:m.scoreFor, score_against:m.scoreAgainst, notes:m.notes,
+    match_length_minutes:m.matchLengthMinutes, starting_player_ids:m.startingPlayerIds,
+    minutes_by_player:m.minutesByPlayer, video_url:m.videoUrl, status:'live'
+  });
+  if(error) throw error;
+  return m.id;
+}
+async function dbUpdateMatch(id, fields){
+  if(PREVIEW_MODE || !sbClient) return true;
+  const {error} = await sbClient.from('matches').update(fields).eq('id', id);
+  if(error) throw error;
+  return true;
+}
+async function dbDeleteMatch(id){
+  if(PREVIEW_MODE || !sbClient) return true;
+  const {error} = await sbClient.from('matches').delete().eq('id', id);
+  if(error) throw error;
+  return true;
+}
+async function dbInsertEvent(matchId, e){
+  if(PREVIEW_MODE || !sbClient) return e.id;
+  const {error} = await sbClient.from('match_events').insert({
+    id:e.id, match_id:matchId, player_id:e.playerId, type_id:e.typeId, timestamp:e.timestamp,
+    x:e.x, y:e.y, goal_x:e.goalX, goal_y:e.goalY, target_player_id:e.targetPlayerId, end_x:e.endX, end_y:e.endY
+  });
+  if(error) throw error;
+  return e.id;
+}
+async function dbUpdateEvent(id, fields){
+  if(PREVIEW_MODE || !sbClient) return true;
+  const {error} = await sbClient.from('match_events').update(fields).eq('id', id);
+  if(error) throw error;
+  return true;
+}
+async function dbDeleteEvent(id){
+  if(PREVIEW_MODE || !sbClient) return true;
+  const {error} = await sbClient.from('match_events').delete().eq('id', id);
+  if(error) throw error;
+  return true;
+}
+async function dbInsertShot(matchId, s){
+  if(PREVIEW_MODE || !sbClient) return s.id;
+  const {error} = await sbClient.from('match_shots').insert({
+    id:s.id, match_id:matchId, player_id:s.playerId, outcome:s.outcome,
+    origin_x:s.originX, origin_y:s.originY, goal_x:s.goalX, goal_y:s.goalY,
+    shot_type:s.shotType, situation:s.situation
+  });
+  if(error) throw error;
+  return s.id;
+}
+async function dbDeleteShot(id){
+  if(PREVIEW_MODE || !sbClient) return true;
+  const {error} = await sbClient.from('match_shots').delete().eq('id', id);
+  if(error) throw error;
+  return true;
+}
+async function dbInsertSub(matchId, s){
+  if(PREVIEW_MODE || !sbClient) return s.id;
+  const {error} = await sbClient.from('match_subs').insert({
+    id:s.id, match_id:matchId, player_id:s.playerId, type:s.type, minute:s.minute
+  });
+  if(error) throw error;
+  return s.id;
+}
+async function dbDeleteSub(id){
+  if(PREVIEW_MODE || !sbClient) return true;
+  const {error} = await sbClient.from('match_subs').delete().eq('id', id);
+  if(error) throw error;
+  return true;
+}
+
+/* ---- Realtime: pushes the other coach's taps to your screen live ---- */
+let realtimeChannel = null;
+let currentMatchId = null;
+let myEventIds = [], myShotIds = [], mySubIds = [];
+function updateLiveStatusIndicator(status){
+  const el = document.getElementById('liveStatusDot');
+  const txt = document.getElementById('liveStatusText');
+  if(!el || !txt) return;
+  if(status==='SUBSCRIBED'){ el.style.background = 'var(--goal-green)'; el.style.boxShadow = '0 0 8px var(--goal-green)'; txt.textContent = 'Live — connected'; }
+  else if(status==='CLOSED' || status==='CHANNEL_ERROR' || status==='TIMED_OUT'){ el.style.background = 'var(--goal-red)'; el.style.boxShadow = 'none'; txt.textContent = 'Reconnecting…'; }
+  else { el.style.background = 'var(--chalk-dim)'; el.style.boxShadow = 'none'; txt.textContent = 'Connecting…'; }
+}
+function subscribeToMatch(matchId){
+  if(!sbClient || PREVIEW_MODE) return;
+  if(realtimeChannel){ sbClient.removeChannel(realtimeChannel); realtimeChannel = null; }
+  realtimeChannel = sbClient.channel('match-'+matchId)
+    .on('postgres_changes', {event:'INSERT', schema:'public', table:'match_events', filter:'match_id=eq.'+matchId}, payload=>{
+      const e = rowToEvent(payload.new);
+      if(!currentEvents.find(x=>x.id===e.id)){ currentEvents.push(e); pendingEventLocation=null; drawEventPitch(); renderEventLog(); updateQuickTagLockState(); }
+    })
+    .on('postgres_changes', {event:'UPDATE', schema:'public', table:'match_events', filter:'match_id=eq.'+matchId}, payload=>{
+      const idx = currentEvents.findIndex(x=>x.id===payload.new.id);
+      if(idx>-1){ currentEvents[idx] = rowToEvent(payload.new); renderEventLog(); }
+    })
+    .on('postgres_changes', {event:'DELETE', schema:'public', table:'match_events', filter:'match_id=eq.'+matchId}, payload=>{
+      currentEvents = currentEvents.filter(x=>x.id!==payload.old.id);
+      drawEventPitch(); renderEventLog();
+    })
+    .on('postgres_changes', {event:'INSERT', schema:'public', table:'match_shots', filter:'match_id=eq.'+matchId}, payload=>{
+      const s = rowToShot(payload.new);
+      if(!currentShots.find(x=>x.id===s.id)){ currentShots.push(s); drawPitch(); drawGoal(); renderShotLog(); }
+    })
+    .on('postgres_changes', {event:'DELETE', schema:'public', table:'match_shots', filter:'match_id=eq.'+matchId}, payload=>{
+      currentShots = currentShots.filter(x=>x.id!==payload.old.id);
+      drawPitch(); drawGoal(); renderShotLog();
+    })
+    .on('postgres_changes', {event:'INSERT', schema:'public', table:'match_subs', filter:'match_id=eq.'+matchId}, payload=>{
+      const s = rowToSub(payload.new);
+      if(!currentSubs.find(x=>x.id===s.id)){ currentSubs.push(s); renderSubsLog(); }
+    })
+    .on('postgres_changes', {event:'DELETE', schema:'public', table:'match_subs', filter:'match_id=eq.'+matchId}, payload=>{
+      currentSubs = currentSubs.filter(x=>x.id!==payload.old.id);
+      renderSubsLog();
+    })
+    .subscribe(status=>{ updateLiveStatusIndicator(status); });
+}
+function unsubscribeFromMatch(){
+  if(realtimeChannel && sbClient){ sbClient.removeChannel(realtimeChannel); realtimeChannel = null; }
+}
+function persistMatchMeta(){
+  if(!currentMatchId) return;
+  dbUpdateMatch(currentMatchId, {
+    match_length_minutes: parseInt(document.getElementById('mMatchLength').value,10)||90,
+    starting_player_ids: Array.from(currentStartingIds),
+    minutes_by_player: collectMinutes()
+  }).catch(()=>{ showConnectionError(); });
+}
+function checkForLiveMatch(){
+  const wrap = document.getElementById('liveMatchBanner');
+  const startBtn = document.getElementById('startMatchBtn');
+  if(!wrap || !startBtn) return;
+  if(currentMatchId){
+    wrap.style.display = 'flex';
+    startBtn.style.display = 'none';
+    document.getElementById('liveMatchLabel').textContent = 'vs ' + (document.getElementById('mOpponent').value||'') + ' (' + (document.getElementById('mDate').value||'') + ')';
+    return;
+  }
+  const live = matches.find(m=>m.status==='live');
+  if(live){
+    wrap.style.display = 'flex';
+    startBtn.style.display = 'none';
+    document.getElementById('liveMatchLabel').textContent = 'vs ' + live.opponent + ' (' + live.date + ') — tap Resume to join';
+    document.getElementById('liveMatchResumeBtn').style.display = 'inline-block';
+    document.getElementById('liveMatchResumeBtn').onclick = ()=>resumeLiveMatch(live.id);
+  } else {
+    wrap.style.display = 'none';
+    startBtn.style.display = 'inline-block';
+  }
+  updateLiveGateLock();
+}
+function updateLiveGateLock(){
+  const locked = !currentMatchId;
+  document.querySelectorAll('.live-gate').forEach(el=>el.classList.toggle('locked', locked));
+}
+function resumeLiveMatch(matchId){
+  const m = matches.find(x=>x.id===matchId);
+  if(!m) return;
+  currentMatchId = m.id;
+  document.getElementById('mOpponent').value = m.opponent;
+  document.getElementById('mDate').value = m.date;
+  document.getElementById('mHomeAway').value = m.homeAway||'Home';
+  document.getElementById('mScoreFor').value = m.scoreFor||0;
+  document.getElementById('mScoreAgainst').value = m.scoreAgainst||0;
+  document.getElementById('mNotes').value = m.notes||'';
+  document.getElementById('mMatchLength').value = m.matchLengthMinutes||90;
+  currentStartingIds = new Set(m.startingPlayerIds||[]);
+  currentEvents = (m.events||[]).slice();
+  currentShots = (m.shots||[]).slice();
+  currentSubs = (m.substitutions||[]).slice();
+  myEventIds = []; myShotIds = []; mySubIds = [];
+  if(m.videoUrl){ currentVideoMeta = {type: detectVideoType(m.videoUrl), url: m.videoUrl}; }
+  renderMinutesTableBody();
+  Object.keys(m.minutesByPlayer||{}).forEach(pid=>{
+    const input = document.querySelector(`#minutesTableBody tr[data-pid="${pid}"] .min-input`);
+    if(input) input.value = m.minutesByPlayer[pid];
+  });
+  drawPitch(); drawGoal(); renderShotLog(); renderEventLog(); renderVideoPlayer(); drawEventPitch(); renderStartingLineupChips(); renderSubsLog(); updateQuickTagLockState();
+  subscribeToMatch(m.id);
+  checkForLiveMatch();
+}
+async function startMatch(){
+  if(!activeTeamId){ alert('Add or select a team first (see the Team tab).'); return; }
+  const opponent = document.getElementById('mOpponent').value.trim();
+  const date = document.getElementById('mDate').value;
+  if(!opponent || !date){ alert('Enter at least the opponent and date first.'); return; }
+  if(matches.find(m=>m.status==='live')){ alert('A match is already live — use Resume instead of starting a new one.'); checkForLiveMatch(); return; }
+  const id = uid();
+  const matchData = {
+    id, date, opponent,
+    homeAway: document.getElementById('mHomeAway').value,
+    scoreFor: parseInt(document.getElementById('mScoreFor').value||0,10),
+    scoreAgainst: parseInt(document.getElementById('mScoreAgainst').value||0,10),
+    notes: document.getElementById('mNotes').value.trim(),
+    matchLengthMinutes: parseInt(document.getElementById('mMatchLength').value,10)||90,
+    startingPlayerIds: Array.from(currentStartingIds),
+    minutesByPlayer: collectMinutes(),
+    videoUrl: (currentVideoMeta && currentVideoMeta.type!=='local') ? currentVideoMeta.url : ''
+  };
+  try{ await dbCreateMatch(matchData); }
+  catch(e){ alert("Couldn't start the match — check your connection and try again."); return; }
+  currentMatchId = id;
+  matches.push({...matchData, status:'live', events:[], shots:[], substitutions:[]});
+  subscribeToMatch(id);
+  checkForLiveMatch();
+  renderDashMatches(); renderMatchList();
+}
+async function finishMatch(){
+  if(!currentMatchId){ alert('Start (or resume) the match first.'); return; }
+  const fields = {
+    score_for: parseInt(document.getElementById('mScoreFor').value||0,10),
+    score_against: parseInt(document.getElementById('mScoreAgainst').value||0,10),
+    notes: document.getElementById('mNotes').value.trim(),
+    match_length_minutes: parseInt(document.getElementById('mMatchLength').value,10)||90,
+    starting_player_ids: Array.from(currentStartingIds),
+    minutes_by_player: collectMinutes(),
+    video_url: (currentVideoMeta && currentVideoMeta.type!=='local') ? currentVideoMeta.url : '',
+    status: 'final'
+  };
+  try{ await dbUpdateMatch(currentMatchId, fields); }
+  catch(e){ alert("Couldn't save — check your connection and try again."); return; }
+  alert('Match finished and saved.');
+  unsubscribeFromMatch();
+  currentMatchId = null;
+  try{ matches = await dbLoadFullMatches(); }catch(e){}
+  resetNewMatchForm();
+  renderDashMatches(); renderMatchList();
+}
+function clearOrLeaveMatch(){
+  if(currentMatchId){
+    if(!confirm("Stop tagging on this device? The match stays live — your assistant coach (or you on another device) can keep tagging it.")) return;
+    unsubscribeFromMatch();
+    currentMatchId = null;
+    resetNewMatchForm();
+  } else {
+    resetNewMatchForm();
+  }
+}
+
 async function loadAll(){
-  try{ const v = await sbGet('roster'); players = v || []; storageOK = true; }
+  try{ players = await dbLoadPlayers(activeTeamId); storageOK = true; }
   catch(e){ players = players||[]; storageOK = false; showConnectionError(); }
-  try{ const v = await sbGet('matches'); matches = v || []; storageOK = true; }
+  try{ matches = await dbLoadFullMatches(); storageOK = true; }
   catch(e){ matches = matches||[]; storageOK = false; showConnectionError(); }
 }
-async function saveRoster(){
-  try{ await sbSet('roster', players); storageOK = true; }
-  catch(e){ storageOK = false; showConnectionError(); }
+
+/* ---- Teams & per-team roster ---- */
+let teams = [];
+let activeTeamId = localStorage.getItem('matchday_active_team_id') || null;
+async function dbLoadTeams(){
+  if(PREVIEW_MODE || !sbClient) return [];
+  const {data, error} = await sbClient.from('teams').select('*').order('name');
+  if(error) throw error;
+  return data||[];
 }
-async function saveMatches(){
-  try{ await sbSet('matches', matches); storageOK = true; }
-  catch(e){ storageOK = false; showConnectionError(); }
+async function dbCreateTeam(name, visibleToRestricted){
+  if(PREVIEW_MODE || !sbClient) return uid();
+  const id = uid();
+  const {error} = await sbClient.from('teams').insert({id, name, visible_to_restricted: !!visibleToRestricted});
+  if(error) throw error;
+  return id;
 }
+async function dbLoadPlayers(teamId){
+  if(PREVIEW_MODE || !sbClient || !teamId) return [];
+  const {data, error} = await sbClient.from('players').select('*').eq('team_id', teamId);
+  if(error) throw error;
+  return (data||[]).map(r=>({id:r.id, name:r.name, number:r.number||'', position:r.position}));
+}
+async function dbInsertPlayer(teamId, p){
+  if(PREVIEW_MODE || !sbClient) return p.id;
+  const {error} = await sbClient.from('players').insert({id:p.id, team_id:teamId, name:p.name, number:p.number, position:p.position});
+  if(error) throw error;
+  return p.id;
+}
+async function dbDeletePlayer(id){
+  if(PREVIEW_MODE || !sbClient) return true;
+  const {error} = await sbClient.from('players').delete().eq('id', id);
+  if(error) throw error;
+  return true;
+}
+function renderTeamSwitcher(){
+  const sel = document.getElementById('teamSwitcher');
+  if(!sel) return;
+  sel.innerHTML = teams.map(t=>`<option value="${t.id}" ${t.id===activeTeamId?'selected':''}>${escapeHtml(t.name)}</option>`).join('');
+  sel.style.display = fullAccess ? '' : 'none';
+  const manage = document.getElementById('manageTeamsPanel');
+  if(manage) manage.style.display = fullAccess ? 'block' : 'none';
+  const label = document.getElementById('matchTeamLabel');
+  if(label){ const t = teams.find(x=>x.id===activeTeamId); label.textContent = t ? t.name : '—'; }
+}
+function renderTeamsList(){
+  const el = document.getElementById('teamsList');
+  if(!el) return;
+  if(teams.length===0){ el.innerHTML = '<div class="empty">No teams yet — add one above.</div>'; return; }
+  el.innerHTML = teams.map(t=>`
+    <div class="roster-item">
+      <div class="name" style="flex:1">${escapeHtml(t.name)}${t.id===activeTeamId?' <span style="color:var(--amber);font-weight:700;font-size:11px">(active)</span>':''}</div>
+      ${t.id!==activeTeamId?`<div class="btn-ghost" style="cursor:pointer" onclick="switchActiveTeam('${t.id}')">Switch to this team</div>`:''}
+    </div>`).join('');
+}
+async function addTeam(){
+  const name = document.getElementById('newTeamName').value.trim();
+  if(!name){ alert('Enter a team name.'); return; }
+  let id;
+  try{ id = await dbCreateTeam(name); }
+  catch(e){ alert("Couldn't create the team — check your connection and try again."); return; }
+  teams.push({id, name});
+  document.getElementById('newTeamName').value = '';
+  renderTeamsList();
+  await switchActiveTeam(id);
+}
+async function switchActiveTeam(teamId){
+  if(teamId===activeTeamId) return;
+  if(currentMatchId){ unsubscribeFromMatch(); currentMatchId = null; }
+  activeTeamId = teamId;
+  localStorage.setItem('matchday_active_team_id', activeTeamId);
+  renderTeamSwitcher(); renderTeamsList();
+  await loadAll();
+  renderRoster(); renderDashMatches(); renderMatchList(); renderPlayerChips();
+  populatePlayerSelects(); renderMinutesTableBody(); renderTeamDashboard();
+  resetNewMatchForm();
+}
+async function migrateLegacyDataToTeam(teamId){
+  try{
+    const oldRoster = await sbGet('roster');
+    if(oldRoster && oldRoster.length){
+      for(const p of oldRoster){ await dbInsertPlayer(teamId, {id:p.id||uid(), name:p.name, number:p.number, position:p.position}); }
+    }
+  }catch(e){}
+  if(sbClient){
+    try{ await sbClient.from('matches').update({team_id: teamId}).is('team_id', null); }catch(e){}
+  }
+}
+async function ensureTeamSetup(){
+  let allTeams = [];
+  try{ allTeams = await dbLoadTeams(); }catch(e){ allTeams = []; }
+  if(allTeams.length===0 && !PREVIEW_MODE){
+    let defaultId;
+    try{ defaultId = await dbCreateTeam('My Team', true); }
+    catch(e){ showConnectionError(); return; }
+    allTeams = [{id:defaultId, name:'My Team', visible_to_restricted:true}];
+    await migrateLegacyDataToTeam(defaultId);
+  }
+  teams = fullAccess ? allTeams : allTeams.filter(t=>t.visible_to_restricted);
+  if(!activeTeamId || !teams.find(t=>t.id===activeTeamId)){
+    activeTeamId = teams.length ? teams[0].id : null;
+    if(activeTeamId) localStorage.setItem('matchday_active_team_id', activeTeamId);
+  }
+  renderTeamSwitcher();
+}
+/* ---- One-time migration: moves your existing matches (old blob-based
+   storage) into the new per-row tables above. Run this ONCE, from the
+   browser console: migrateOldMatchesToLiveTables()
+   Safe to re-run — it skips matches that already exist in the new tables. */
+async function migrateOldMatchesToLiveTables(){
+  if(!sbClient){ console.error('Not connected to Supabase — cannot migrate.'); return; }
+  const old = await sbGet('matches');
+  if(!old || !old.length){ console.log('No old matches found — nothing to migrate.'); return; }
+  const existing = await dbLoadFullMatches();
+  const existingIds = new Set(existing.map(m=>m.id));
+  let migrated = 0, skipped = 0;
+  for(const m of old){
+    if(existingIds.has(m.id)){ skipped++; continue; }
+    await dbCreateMatch({
+      id:m.id, date:m.date, opponent:m.opponent, homeAway:m.homeAway,
+      scoreFor:m.scoreFor, scoreAgainst:m.scoreAgainst, notes:m.notes,
+      matchLengthMinutes:m.matchLengthMinutes, startingPlayerIds:m.startingPlayerIds,
+      minutesByPlayer:m.minutesByPlayer, videoUrl:m.videoUrl
+    });
+    await dbUpdateMatch(m.id, {status:'final'});
+    for(const e of (m.events||[])){ await dbInsertEvent(m.id, {...e, id: e.id||uid()}); }
+    for(const s of (m.shots||[])){ await dbInsertShot(m.id, {...s, id: s.id||uid()}); }
+    for(const s of (m.substitutions||[])){ await dbInsertSub(m.id, {...s, id: s.id||uid()}); }
+    migrated++;
+  }
+  console.log(`Migration done: ${migrated} matches migrated, ${skipped} already present.`);
+  await loadAll();
+  renderDashMatches(); renderMatchList();
+}
+window.migrateOldMatchesToLiveTables = migrateOldMatchesToLiveTables;
 function showConnectionError(){
   const el = document.getElementById('connError');
   if(el) el.style.display = 'block';
@@ -940,8 +1555,9 @@ document.querySelectorAll('.tab').forEach(t=>{
     document.getElementById('view-'+t.dataset.view).classList.add('active');
     if(t.dataset.view==='players'){ renderPlayerChips(); }
     if(t.dataset.view==='matches'){ renderMatchList(); closeMatchDetail(); }
-    if(t.dataset.view==='newmatch'){ populatePlayerSelects(); renderMinutesTableBody(); }
-    if(t.dataset.view==='team'){ renderTeamDashboard(); }
+    if(t.dataset.view==='newmatch'){ populatePlayerSelects(); renderMinutesTableBody(); checkForLiveMatch(); }
+    if(t.dataset.view==='team'){ renderTeamsList(); renderTeamDashboard(); }
+    if(t.dataset.view==='search'){ populateSearchFilters(); renderSearchResults(); }
   });
 });
 
@@ -952,20 +1568,22 @@ function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(
 function escapeHtml(s){ return (s||'').toString().replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
 async function addPlayer(){
+  if(!activeTeamId){ alert('Add or select a team first (see the Team tab).'); return; }
   const name = document.getElementById('rosterName').value.trim();
   const num = document.getElementById('rosterNum').value.trim();
   const pos = document.getElementById('rosterPos').value;
   if(!name){ alert('Enter a player name.'); return; }
-  players.push({id:uid(), name, number:num, position:pos});
+  const p = {id:uid(), name, number:num, position:pos};
+  players.push(p);
   document.getElementById('rosterName').value=''; document.getElementById('rosterNum').value='';
-  await saveRoster();
   renderRoster(); populatePlayerSelects(); renderMinutesTableBody();
+  try{ await dbInsertPlayer(activeTeamId, p); }catch(e){ showConnectionError(); }
 }
 async function removePlayer(id){
   if(!confirm('Remove this player from the roster? Past match stats will stay intact.')) return;
   players = players.filter(p=>p.id!==id);
-  await saveRoster();
   renderRoster(); populatePlayerSelects(); renderMinutesTableBody();
+  try{ await dbDeletePlayer(id); }catch(e){ showConnectionError(); }
 }
 function renderRoster(){
   const el = document.getElementById('rosterList');
@@ -983,7 +1601,10 @@ function populatePlayerSelects(){
   document.querySelectorAll('.player-select').forEach(sel=>{ sel.innerHTML = opts; });
   renderEventPlayerChips();
   renderQuickTagGrid();
+  updateQuickTagLockState();
   renderPitchFilterChips();
+  renderStartingLineupChips();
+  renderSubsLog();
 }
 let activeEventPlayerId = null;
 function renderEventPlayerChips(){
@@ -991,7 +1612,11 @@ function renderEventPlayerChips(){
   if(!el) return;
   if(players.length===0){ el.innerHTML = '<div class="empty">Add players to the roster first.</div>'; return; }
   if(!activeEventPlayerId || !players.find(p=>p.id===activeEventPlayerId)) activeEventPlayerId = players[0].id;
-  el.innerHTML = players.map(p=>`<div class="player-chip ${p.id===activeEventPlayerId?'sel':''}" onclick="selectEventPlayerChip('${p.id}')">${escapeHtml(p.name)}${p.number?(' #'+p.number):''}</div>`).join('');
+  el.innerHTML = players.map((p,i)=>{
+    const key = i<9 ? (i+1) : (i===9 ? 0 : null);
+    const badge = key!==null ? `<span class="key-badge">${key}</span>` : '';
+    return `<div class="player-chip ${p.id===activeEventPlayerId?'sel':''}" onclick="selectEventPlayerChip('${p.id}')">${badge}${escapeHtml(p.name)}${p.number?(' #'+p.number):''}</div>`;
+  }).join('');
 }
 function selectEventPlayerChip(id){ activeEventPlayerId = id; renderEventPlayerChips(); }
 function quickTagButtonsHTML(){
@@ -1000,7 +1625,9 @@ function quickTagButtonsHTML(){
     const btns = EVENT_TYPES.filter(t=>t.cat===cat).map(t=>{
       const isGk = (t.id==='save' || t.id==='goal_conceded');
       const handler = isGk ? `beginGkEvent('${t.id}')` : `quickAddEvent('${t.id}')`;
-      return `<button type="button" class="qt-btn" style="color:${color};border-color:${color}55" onclick="${handler}">${t.label}</button>`;
+      const key = hotkeyBadgeForType(t.id);
+      const badge = key ? `<span class="key-badge" style="background:${color};border-color:${color}">${key}</span>` : '';
+      return `<button type="button" class="qt-btn" style="color:${color};border-color:${color}55" onclick="${handler}">${badge}${t.label}</button>`;
     }).join('');
     return `<div class="qt-cat"><div class="qt-cat-label" style="color:${color}">${cat}</div><div class="qt-row">${btns}</div></div>`;
   }).join('');
@@ -1040,6 +1667,79 @@ function collectMinutes(){
   const out = {};
   rows.forEach(r=>{ out[r.dataset.pid] = parseFloat(r.querySelector('.min-input')?.value || 0) || 0; });
   return out;
+}
+
+/* ============================================================
+   STARTING LINEUP & SUBSTITUTIONS
+============================================================ */
+let currentStartingIds = new Set();
+let currentSubs = [];
+function renderStartingLineupChips(){
+  const el = document.getElementById('startingLineupChips');
+  if(!el) return;
+  el.innerHTML = players.map(p=>`<div class="player-chip ${currentStartingIds.has(p.id)?'sel':''}" onclick="toggleStartingPlayer('${p.id}')">${escapeHtml(p.name)}${p.number?(' #'+p.number):''}</div>`).join('');
+}
+function toggleStartingPlayer(id){
+  if(currentStartingIds.has(id)) currentStartingIds.delete(id); else currentStartingIds.add(id);
+  renderStartingLineupChips();
+  persistMatchMeta();
+}
+async function logSub(type){
+  if(!currentMatchId){ alert('Start (or resume) the match first.'); return; }
+  const playerId = document.getElementById('subPlayer').value;
+  const minute = parseInt(document.getElementById('subMinute').value, 10);
+  if(!playerId){ alert('Add a player to the roster first.'); return; }
+  if(isNaN(minute)){ alert('Enter the minute this substitution happened.'); return; }
+  const sub = {id: uid(), playerId, type, minute};
+  currentSubs.push(sub);
+  mySubIds.push(sub.id);
+  document.getElementById('subMinute').value = '';
+  renderSubsLog();
+  try{ await dbInsertSub(currentMatchId, sub); }catch(e){ showConnectionError(); }
+}
+function removeSub(id){
+  currentSubs = currentSubs.filter(s=>s.id!==id);
+  mySubIds = mySubIds.filter(x=>x!==id);
+  renderSubsLog();
+  dbDeleteSub(id).catch(()=>{ showConnectionError(); });
+}
+function renderSubsLog(){
+  const el = document.getElementById('subsLog');
+  if(!el) return;
+  if(currentSubs.length===0){ el.innerHTML = '<div class="empty">No substitutions logged yet.</div>'; return; }
+  const sorted = currentSubs.slice().sort((a,b)=>a.minute-b.minute);
+  el.innerHTML = sorted.map(s=>{
+    const p = players.find(pp=>pp.id===s.playerId);
+    return `<div class="shot-log-row"><span class="tag" style="background:${s.type==='in'?'var(--goal-green)':'var(--goal-red)'}"></span><span>${escapeHtml(p?p.name:'Unknown')}</span><span style="color:var(--chalk-dim)">— ${s.type==='in'?'On':'Off'} at ${s.minute}'</span><span class="rm" onclick="removeSub('${s.id}')">remove</span></div>`;
+  }).join('');
+}
+function recalcMinutesFromSubs(){
+  const length = parseInt(document.getElementById('mMatchLength').value, 10) || 90;
+  const minutesMap = {};
+  const onSince = {};
+  currentStartingIds.forEach(pid=>{ onSince[pid] = 0; minutesMap[pid] = 0; });
+  const sorted = currentSubs.slice().sort((a,b)=>a.minute-b.minute);
+  sorted.forEach(s=>{
+    if(s.type==='in'){
+      onSince[s.playerId] = s.minute;
+      if(minutesMap[s.playerId]===undefined) minutesMap[s.playerId] = 0;
+    } else if(s.type==='out'){
+      if(onSince[s.playerId]!==undefined){
+        minutesMap[s.playerId] = (minutesMap[s.playerId]||0) + (s.minute - onSince[s.playerId]);
+        delete onSince[s.playerId];
+      }
+    }
+  });
+  Object.keys(onSince).forEach(pid=>{
+    minutesMap[pid] = (minutesMap[pid]||0) + (length - onSince[pid]);
+  });
+  let filled = 0;
+  players.forEach(p=>{
+    const input = document.querySelector(`#minutesTableBody tr[data-pid="${p.id}"] .min-input`);
+    if(input && minutesMap[p.id]!==undefined){ input.value = minutesMap[p.id]; filled++; }
+  });
+  if(filled===0) alert('Mark who started (or log some subs) first, then try again.');
+  persistMatchMeta();
 }
 
 /* ============================================================
@@ -1158,65 +1858,178 @@ function currentAutoTimestamp(){
   const manual = document.getElementById('eventTimestamp');
   return manual ? manual.value.trim() : '';
 }
-let lastLoggedEventIndex = null;
-function quickAddEvent(typeId){
+let lastLoggedEventId = null;
+async function quickAddEvent(typeId){
+  if(!currentMatchId){ alert('Start (or resume) the match first.'); return; }
   if(!activeEventPlayerId){ alert('Add a player to the roster first.'); return; }
-  const evObj = {playerId: activeEventPlayerId, typeId, timestamp: currentAutoTimestamp()};
-  if(pendingEventLocation){ evObj.x = pendingEventLocation.x; evObj.y = pendingEventLocation.y; pendingEventLocation = null; }
+  if(!pitchLocationReady()){ flashPitchRequired(); return; }
+  const evObj = {id: uid(), playerId: activeEventPlayerId, typeId, timestamp: currentAutoTimestamp()};
+  evObj.x = pendingEventLocation.x; evObj.y = pendingEventLocation.y; pendingEventLocation = null;
   currentEvents.push(evObj);
-  lastLoggedEventIndex = currentEvents.length-1;
+  lastLoggedEventId = evObj.id;
+  myEventIds.push(evObj.id);
+  updateQuickTagLockState();
   drawEventPitch();
   renderEventLog();
   if(PASS_NETWORK_TYPES.includes(typeId)) showRecipientPicker(); else dismissRecipientPicker();
+  try{ await dbInsertEvent(currentMatchId, evObj); }catch(e){ showConnectionError(); }
 }
 function showRecipientPicker(){
   const wrap = document.getElementById('recipientPicker');
   const chips = document.getElementById('recipientChips');
-  if(!wrap || !chips || lastLoggedEventIndex===null) return;
-  const passerId = currentEvents[lastLoggedEventIndex].playerId;
-  chips.innerHTML = players.filter(p=>p.id!==passerId).map(p=>`<div class="player-chip" onclick="setRecipient('${p.id}')">${escapeHtml(p.name)}${p.number?(' #'+p.number):''}</div>`).join('');
+  if(!wrap || !chips || lastLoggedEventId===null) return;
+  const ev = currentEvents.find(e=>e.id===lastLoggedEventId);
+  if(!ev) return;
+  renderRecipientChips(ev.playerId);
+  const svg = document.getElementById('passDistanceSvg');
+  if(svg){ svg.innerHTML = fullPitchSVG(); svg.onclick = onPassDistanceClick; }
   wrap.style.display = 'block';
 }
+function renderRecipientChips(passerId){
+  const chips = document.getElementById('recipientChips');
+  if(!chips) return;
+  const ev = lastLoggedEventId!==null ? currentEvents.find(e=>e.id===lastLoggedEventId) : null;
+  const current = ev ? ev.targetPlayerId : null;
+  chips.innerHTML = players.filter(p=>p.id!==passerId).map(p=>`<div class="player-chip ${p.id===current?'sel':''}" onclick="setRecipient('${p.id}')">${escapeHtml(p.name)}${p.number?(' #'+p.number):''}</div>`).join('');
+}
 function setRecipient(playerId){
-  if(lastLoggedEventIndex===null || !currentEvents[lastLoggedEventIndex]) return;
-  currentEvents[lastLoggedEventIndex].targetPlayerId = playerId;
-  dismissRecipientPicker();
+  const ev = lastLoggedEventId!==null ? currentEvents.find(e=>e.id===lastLoggedEventId) : null;
+  if(!ev) return;
+  ev.targetPlayerId = playerId;
+  renderRecipientChips(ev.playerId);
   renderEventLog();
+  dbUpdateEvent(ev.id, {target_player_id: playerId}).catch(()=>{ showConnectionError(); });
+}
+/* Pitch scale: viewBox is 400 wide (68m) x 600 tall (105m) */
+function pxToMeters(dx, dy){
+  const mx = dx / (400/68);
+  const my = dy / (600/105);
+  return Math.sqrt(mx*mx + my*my);
+}
+function onPassDistanceClick(evt){
+  const ev = lastLoggedEventId!==null ? currentEvents.find(e=>e.id===lastLoggedEventId) : null;
+  if(!ev) return;
+  const svg = document.getElementById('passDistanceSvg');
+  const p = svgPoint(svg, evt);
+  const end = {x: Math.max(4,Math.min(396,p.x)), y: Math.max(4,Math.min(596,p.y))};
+  ev.endX = end.x; ev.endY = end.y;
+  let g = svg.querySelector('#passEndMark');
+  if(g) g.remove();
+  const marker = document.createElementNS('http://www.w3.org/2000/svg','circle');
+  marker.setAttribute('id','passEndMark'); marker.setAttribute('cx', end.x); marker.setAttribute('cy', end.y);
+  marker.setAttribute('r', 8); marker.setAttribute('fill', 'var(--amber)'); marker.setAttribute('stroke', '#fff'); marker.setAttribute('stroke-width', 1.5);
+  svg.appendChild(marker);
+  if(ev.x!==undefined && ev.y!==undefined){
+    const dist = pxToMeters(end.x-ev.x, end.y-ev.y);
+    let label = svg.querySelector('#passEndLabel');
+    if(label) label.remove();
+    const text = document.createElementNS('http://www.w3.org/2000/svg','text');
+    text.setAttribute('id','passEndLabel'); text.setAttribute('x', 200); text.setAttribute('y', 20);
+    text.setAttribute('text-anchor','middle'); text.setAttribute('fill','var(--pitch-white)'); text.setAttribute('font-size','16'); text.setAttribute('font-weight','700');
+    text.textContent = dist.toFixed(1)+' m';
+    svg.appendChild(text);
+  }
+  renderEventLog();
+  dbUpdateEvent(ev.id, {end_x: ev.endX, end_y: ev.endY}).catch(()=>{ showConnectionError(); });
 }
 function dismissRecipientPicker(){
   const wrap = document.getElementById('recipientPicker');
   if(wrap) wrap.style.display = 'none';
 }
 function beginGkEvent(typeId){
+  if(!currentMatchId){ alert('Start (or resume) the match first.'); return; }
   if(!activeEventPlayerId){ alert('Add a player to the roster first.'); return; }
+  if(!pitchLocationReady()){ flashPitchRequired(); return; }
   pendingGkType = typeId;
   updateGkPickerVisibility();
   const picker = document.getElementById('gkGoalPicker');
   if(picker) picker.scrollIntoView({behavior:'smooth', block:'nearest'});
 }
-function finalizeGkEvent(loc){
-  const evObj = {playerId: activeEventPlayerId, typeId: pendingGkType, timestamp: currentAutoTimestamp()};
-  if(pendingEventLocation){ evObj.x = pendingEventLocation.x; evObj.y = pendingEventLocation.y; pendingEventLocation = null; }
+async function finalizeGkEvent(loc){
+  const evObj = {id: uid(), playerId: activeEventPlayerId, typeId: pendingGkType, timestamp: currentAutoTimestamp()};
+  evObj.x = pendingEventLocation.x; evObj.y = pendingEventLocation.y; pendingEventLocation = null;
   if(loc){ evObj.goalX = loc.x; evObj.goalY = loc.y; }
   currentEvents.push(evObj);
+  lastLoggedEventId = evObj.id;
+  myEventIds.push(evObj.id);
   pendingGkType = null;
   updateGkPickerVisibility();
+  updateQuickTagLockState();
   drawGkGoalPicker(); drawEventPitch();
   renderEventLog();
+  try{ await dbInsertEvent(currentMatchId, evObj); }catch(e){ showConnectionError(); }
 }
 function logGkEventWithoutLocation(){
   if(!pendingGkType){ updateGkPickerVisibility(); return; }
   finalizeGkEvent(null);
 }
 function undoLastEvent(){
-  if(currentEvents.length===0) return;
-  currentEvents.pop();
-  lastLoggedEventIndex = null;
+  if(myEventIds.length===0) return;
+  const id = myEventIds.pop();
+  removeEvent(id);
+}
+function repeatLastEvent(){
+  if(myEventIds.length===0) return;
+  if(!pitchLocationReady()){ flashPitchRequired(); return; }
+  const last = currentEvents.find(e=>e.id===myEventIds[myEventIds.length-1]);
+  if(!last) return;
+  if(last.typeId==='save' || last.typeId==='goal_conceded'){ beginGkEvent(last.typeId); }
+  else { quickAddEvent(last.typeId); }
+}
+function openShortcutsHelp(){
+  const rows = [];
+  rows.push({key:'1–9, 0', desc:'Switch "Tagging as" player (matches roster order)'});
+  Object.keys(HOTKEY_MAP).forEach(k=>{
+    const entry = HOTKEY_MAP[k];
+    const plainType = EVENT_TYPES.find(t=>t.id===entry.plain);
+    rows.push({key:k.toUpperCase(), desc:plainType?plainType.label:entry.plain});
+    if(entry.shift){
+      const shiftType = EVENT_TYPES.find(t=>t.id===entry.shift);
+      rows.push({key:'\u21e7'+k.toUpperCase(), desc:shiftType?shiftType.label:entry.shift});
+    }
+  });
+  rows.push({key:'.', desc:'Repeat last logged event'});
+  rows.push({key:',', desc:'Undo last event'});
+  Object.keys(SHOT_OUTCOME_HOTKEYS).forEach(k=>{
+    rows.push({key:k.toUpperCase(), desc:'Shot outcome: '+SHOT_OUTCOME_HOTKEYS[k]});
+  });
+  document.getElementById('shortcutsList').innerHTML = `<div class="event-log-wrap" style="max-height:400px">${rows.map(r=>
+    `<div class="event-row" style="cursor:default"><span class="key-badge" style="background:var(--amber)">${r.key}</span><span class="ev-type">${r.desc}</span></div>`
+  ).join('')}</div>`;
+  document.getElementById('shortcutsModalOverlay').classList.add('show');
+}
+function closeShortcutsHelp(){ document.getElementById('shortcutsModalOverlay').classList.remove('show'); }
+document.addEventListener('keydown', function(evt){
+  const tag = document.activeElement ? document.activeElement.tagName : '';
+  if(tag==='INPUT' || tag==='TEXTAREA' || tag==='SELECT') return;
+  const newMatchView = document.getElementById('view-newmatch');
+  if(!newMatchView || !newMatchView.classList.contains('active')) return;
+  const key = evt.key;
+  if(/^[0-9]$/.test(key)){
+    const idx = key==='0' ? 9 : parseInt(key,10)-1;
+    if(players[idx]){ selectEventPlayerChip(players[idx].id); evt.preventDefault(); }
+    return;
+  }
+  const lower = key.toLowerCase();
+  if(HOTKEY_MAP[lower]){
+    const entry = HOTKEY_MAP[lower];
+    const typeId = (evt.shiftKey && entry.shift) ? entry.shift : entry.plain;
+    if(typeId==='save' || typeId==='goal_conceded'){ beginGkEvent(typeId); } else { quickAddEvent(typeId); }
+    evt.preventDefault(); return;
+  }
+  if(key==='.'){ repeatLastEvent(); evt.preventDefault(); return; }
+  if(key===','){ undoLastEvent(); evt.preventDefault(); return; }
+  if(SHOT_OUTCOME_HOTKEYS[lower]){ setOutcome(SHOT_OUTCOME_HOTKEYS[lower]); evt.preventDefault(); return; }
+});
+function removeEvent(id){
+  currentEvents = currentEvents.filter(e=>e.id!==id);
+  myEventIds = myEventIds.filter(x=>x!==id);
+  if(lastLoggedEventId===id) lastLoggedEventId = null;
   dismissRecipientPicker();
   drawEventPitch();
   renderEventLog();
+  dbDeleteEvent(id).catch(()=>{ showConnectionError(); });
 }
-function removeEvent(i){ currentEvents.splice(i,1); lastLoggedEventIndex = null; dismissRecipientPicker(); drawEventPitch(); renderEventLog(); }
 function sortEventsForDisplay(list){
   const withIdx = list.map((e,i)=>({...e,i}));
   withIdx.sort((a,b)=>{
@@ -1228,6 +2041,10 @@ function sortEventsForDisplay(list){
   });
   return withIdx;
 }
+function calcPassDistance(e){
+  if(e.x===undefined || e.y===undefined || e.endX===undefined || e.endY===undefined) return null;
+  return pxToMeters(e.endX-e.x, e.endY-e.y);
+}
 function renderEventLog(){
   const el = document.getElementById('eventLog');
   if(currentEvents.length===0){ el.innerHTML='<div class="empty">No events tagged yet.</div>'; return; }
@@ -1235,11 +2052,12 @@ function renderEventLog(){
     const player = players.find(p=>p.id===e.playerId);
     const type = EVENT_TYPES.find(t=>t.id===e.typeId);
     const recipient = e.targetPlayerId ? players.find(p=>p.id===e.targetPlayerId) : null;
+    const dist = calcPassDistance(e);
     return `<div class="event-row" onclick="seekToEvent('${e.timestamp}')">
       <span class="ev-time">${e.timestamp||'--:--'}</span>
       <span class="ev-player">${player?escapeHtml(player.name):'Unknown'}</span>
-      <span class="ev-type">${type?type.label:e.typeId}${recipient?' \u2192 '+escapeHtml(recipient.name):''}</span>
-      <span class="ev-rm" onclick="event.stopPropagation(); removeEvent(${e.i})">remove</span>
+      <span class="ev-type">${type?type.label:e.typeId}${recipient?' \u2192 '+escapeHtml(recipient.name):''}${dist!==null?' \u2022 '+dist.toFixed(1)+'m':''}</span>
+      <span class="ev-rm" onclick="event.stopPropagation(); removeEvent('${e.id}')">remove</span>
     </div>`;
   }).join('');
 }
@@ -1371,65 +2189,58 @@ function drawExistingGoalMarks(){
   currentShots.forEach(s=>{ const note=shotNote(s); html += s.outcome==='missed' ? xSVG(s.goalX,s.goalY,8,note) : ballSVG(s.goalX,s.goalY,markerColor(s.outcome),8,note); });
   svg.insertAdjacentHTML('beforeend', `<g id="marks">${html}</g>`);
 }
-function addPendingShot(){
+async function addPendingShot(){
+  if(!currentMatchId){ alert('Start (or resume) the match first.'); pendingShot=null; return; }
   const playerId = document.getElementById('shotPlayer').value;
   if(!playerId){ flashHint('Add a player to the roster first.'); pendingShot=null; return; }
-  currentShots.push({
-    playerId, outcome: pendingShot.outcome,
+  const shot = {
+    id: uid(), playerId, outcome: pendingShot.outcome,
     originX: pendingShot.originX, originY: pendingShot.originY,
     goalX: pendingShot.goalX, goalY: pendingShot.goalY,
     shotType: pendingShot.shotType || 'right', situation: pendingShot.situation || 'open_play'
-  });
+  };
+  currentShots.push(shot);
+  myShotIds.push(shot.id);
   pendingShot = null;
   document.querySelectorAll('.outcome-btn').forEach(b=>b.classList.remove('sel'));
   drawPitch(); drawGoal(); renderShotLog(); updateShotHint();
+  try{ await dbInsertShot(currentMatchId, shot); }catch(e){ showConnectionError(); }
 }
 function renderShotLog(){
   const el = document.getElementById('shotLog');
   if(currentShots.length===0){ el.innerHTML = '<div class="empty">No shots logged for this match yet.</div>'; return; }
-  el.innerHTML = currentShots.map((s,i)=>{
+  el.innerHTML = currentShots.map((s)=>{
     const player = players.find(p=>p.id===s.playerId);
     const color = s.outcome==='goal' ? 'var(--goal-green)' : s.outcome==='saved' ? 'var(--goal-red)' : 'var(--goal-black)';
-    return `<div class="shot-log-row"><span class="tag" style="background:${color}"></span><span>${escapeHtml(player?player.name:'Unknown')}</span><span style="color:var(--chalk-dim)">— ${escapeHtml(shotNote(s))}</span><span class="rm" onclick="removeShot(${i})">remove</span></div>`;
+    return `<div class="shot-log-row"><span class="tag" style="background:${color}"></span><span>${escapeHtml(player?player.name:'Unknown')}</span><span style="color:var(--chalk-dim)">— ${escapeHtml(shotNote(s))}</span><span class="rm" onclick="removeShot('${s.id}')">remove</span></div>`;
   }).join('');
 }
-function removeShot(i){ currentShots.splice(i,1); drawPitch(); drawGoal(); renderShotLog(); }
-function undoLastShot(){
-  if(currentShots.length===0) return;
-  currentShots.pop();
+function removeShot(id){
+  currentShots = currentShots.filter(s=>s.id!==id);
+  myShotIds = myShotIds.filter(x=>x!==id);
   drawPitch(); drawGoal(); renderShotLog();
+  dbDeleteShot(id).catch(()=>{ showConnectionError(); });
+}
+function undoLastShot(){
+  if(myShotIds.length===0) return;
+  const id = myShotIds.pop();
+  removeShot(id);
 }
 
 /* ============================================================
    SAVE / RESET MATCH
 ============================================================ */
-async function saveMatch(){
-  const opponent = document.getElementById('mOpponent').value.trim();
-  const date = document.getElementById('mDate').value;
-  if(!opponent || !date){ alert('Enter at least the opponent and date.'); return; }
-  const match = {
-    id: uid(), date, opponent,
-    homeAway: document.getElementById('mHomeAway').value,
-    scoreFor: parseInt(document.getElementById('mScoreFor').value||0,10),
-    scoreAgainst: parseInt(document.getElementById('mScoreAgainst').value||0,10),
-    notes: document.getElementById('mNotes').value.trim(),
-    minutesByPlayer: collectMinutes(),
-    shots: currentShots.slice(),
-    events: currentEvents.slice(),
-    videoUrl: (currentVideoMeta && currentVideoMeta.type!=='local') ? currentVideoMeta.url : ''
-  };
-  matches.push(match);
-  await saveMatches();
-  alert('Match saved. Your assistant coach will see it after they refresh.');
-  resetNewMatchForm();
-  renderDashMatches(); renderMatchList();
-}
 function resetNewMatchForm(){
   document.getElementById('mOpponent').value=''; document.getElementById('mDate').value='';
   document.getElementById('mScoreFor').value=0; document.getElementById('mScoreAgainst').value=0;
   document.getElementById('mNotes').value=''; document.getElementById('videoUrlInput').value='';
-  currentShots = []; currentEvents = []; pendingShot = null; currentVideoMeta = null; pendingGkType = null; pendingEventLocation = null; pitchFilterPlayerIds = new Set(); lastLoggedEventIndex = null;
-  renderMinutesTableBody(); drawPitch(); drawGoal(); renderShotLog(); renderEventLog(); renderVideoPlayer(); updateShotHint(); drawGkGoalPicker(); drawEventPitch(); updateGkPickerVisibility(); renderPitchFilterChips(); dismissRecipientPicker();
+  document.getElementById('mMatchLength').value=90;
+  currentShots = []; currentEvents = []; pendingShot = null; currentVideoMeta = null; pendingGkType = null; pendingEventLocation = null; pitchFilterPlayerIds = new Set(); lastLoggedEventId = null;
+  currentStartingIds = new Set(); currentSubs = [];
+  myEventIds = []; myShotIds = []; mySubIds = [];
+  renderMinutesTableBody(); drawPitch(); drawGoal(); renderShotLog(); renderEventLog(); renderVideoPlayer(); updateShotHint(); drawGkGoalPicker(); drawEventPitch(); updateGkPickerVisibility(); renderPitchFilterChips(); dismissRecipientPicker(); updateQuickTagLockState();
+  renderStartingLineupChips(); renderSubsLog();
+  checkForLiveMatch();
 }
 
 /* ============================================================
@@ -1453,6 +2264,91 @@ function renderDashMatches(){
     </div>`).join('');
 }
 function openMatchFromDash(id){ document.querySelector('.tab[data-view="matches"]').click(); openMatchDetail(id); }
+
+/* ============================================================
+   SEARCH
+============================================================ */
+function populateSearchFilters(){
+  const playerSel = document.getElementById('searchPlayer');
+  const matchSel = document.getElementById('searchMatch');
+  const typeSel = document.getElementById('searchType');
+  if(!playerSel || !matchSel || !typeSel) return;
+  const prevPlayer = playerSel.value, prevMatch = matchSel.value, prevType = typeSel.value;
+
+  playerSel.innerHTML = '<option value="all">All players</option>' +
+    players.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}${p.number?(' #'+p.number):''}</option>`).join('');
+
+  const sortedMatches = matches.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  matchSel.innerHTML = '<option value="all">All matches</option>' +
+    sortedMatches.map(m=>`<option value="${m.id}">${m.date} vs ${escapeHtml(m.opponent)}</option>`).join('');
+
+  typeSel.innerHTML = '<option value="all">All event types</option>' + eventTypeSelectHTML();
+
+  if([...playerSel.options].some(o=>o.value===prevPlayer)) playerSel.value = prevPlayer;
+  if([...matchSel.options].some(o=>o.value===prevMatch)) matchSel.value = prevMatch;
+  if([...typeSel.options].some(o=>o.value===prevType)) typeSel.value = prevType;
+}
+function clearSearchFilters(){
+  document.getElementById('searchPlayer').value = 'all';
+  document.getElementById('searchMatch').value = 'all';
+  document.getElementById('searchType').value = 'all';
+  renderSearchResults();
+}
+function renderSearchResults(){
+  const el = document.getElementById('searchResults');
+  const countEl = document.getElementById('searchResultCount');
+  if(!el) return;
+  const playerFilter = document.getElementById('searchPlayer').value;
+  const matchFilter = document.getElementById('searchMatch').value;
+  const typeFilter = document.getElementById('searchType').value;
+
+  let results = [];
+  matches.forEach(m=>{
+    (m.events||[]).forEach(e=>{
+      if(playerFilter!=='all' && e.playerId!==playerFilter) return;
+      if(matchFilter!=='all' && m.id!==matchFilter) return;
+      if(typeFilter!=='all' && e.typeId!==typeFilter) return;
+      results.push({match:m, event:e});
+    });
+  });
+
+  results.sort((a,b)=>{
+    const dateCmp = b.match.date.localeCompare(a.match.date);
+    if(dateCmp!==0) return dateCmp;
+    const as = parseTimeToSeconds(a.event.timestamp), bs = parseTimeToSeconds(b.event.timestamp);
+    if(as===null && bs===null) return 0;
+    if(as===null) return 1;
+    if(bs===null) return -1;
+    return as-bs;
+  });
+
+  if(countEl) countEl.textContent = results.length ? `(${results.length})` : '';
+
+  if(results.length===0){
+    el.innerHTML = '<div class="empty">No events match those filters.</div>';
+    return;
+  }
+
+  el.innerHTML = results.map(r=>{
+    const player = players.find(p=>p.id===r.event.playerId);
+    const type = EVENT_TYPES.find(t=>t.id===r.event.typeId);
+    const color = type ? (CATEGORY_COLORS[type.cat]||'var(--amber)') : 'var(--amber)';
+    const recipient = r.event.targetPlayerId ? players.find(p=>p.id===r.event.targetPlayerId) : null;
+    return `<div class="event-row" onclick="openSearchResult('${r.match.id}','${r.event.timestamp||''}')">
+      <span class="ev-time">${r.event.timestamp||'--:--'}</span>
+      <span class="ev-match">${r.match.date} vs ${escapeHtml(r.match.opponent)}</span>
+      <span class="ev-player">${player?escapeHtml(player.name):'Unknown'}</span>
+      <span class="ev-type"><span class="type-dot" style="background:${color}"></span>${type?type.label:r.event.typeId}${recipient?' \u2192 '+escapeHtml(recipient.name):''}</span>
+    </div>`;
+  }).join('');
+}
+function openSearchResult(matchId, timestamp){
+  document.querySelector('.tab[data-view="matches"]').click();
+  openMatchDetail(matchId);
+  if(timestamp){
+    setTimeout(()=>seekDetailVideo(timestamp), 350);
+  }
+}
 
 /* ============================================================
    MATCH HISTORY
@@ -1566,10 +2462,6 @@ function openMatchDetail(id){
     <h2 style="margin-bottom:4px">vs ${escapeHtml(m.opponent)} <span style="color:var(--chalk-dim);font-weight:400;font-size:13px">(${m.homeAway})</span></h2>
     <div style="color:var(--chalk-dim);font-size:12px;margin-bottom:14px">${m.date} &middot; Final score ${m.scoreFor}–${m.scoreAgainst}${m.notes? ' &middot; '+escapeHtml(m.notes):''}</div>
 
-    <h2 style="font-size:14px">Game Film<span class="yard"></span></h2>
-    <div class="chart-box" style="margin-bottom:16px">${renderMatchDetailVideo(m)}</div>
-    <div id="detailVideoControlsExtra" style="margin-bottom:16px"></div>
-
     <h2 style="font-size:14px">Player Stats<span class="yard"></span></h2>
     ${buildStatsTableHTML(rows)}
 
@@ -1598,6 +2490,11 @@ function openMatchDetail(id){
     </div>
 
     <h2 style="font-size:14px;margin-top:16px">Match Events<span class="yard"></span></h2>
+    <div class="wizard-step">
+      <div class="wizard-label">🎬 Game Film <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--chalk-dim)">— click any timestamp below to jump here</span></div>
+      <div class="chart-box" style="margin-bottom:12px">${renderMatchDetailVideo(m)}</div>
+      <div id="detailVideoControlsExtra"></div>
+    </div>
     ${renderMatchDetailEventMap(m)}
     ${renderMatchDetailEvents(m)}
 
@@ -1626,14 +2523,22 @@ async function confirmDeleteMatch(){
   const input = document.getElementById('deleteConfirmPasscodeInput').value;
   const msg = document.getElementById('deleteConfirmMsg');
   msg.textContent = '';
-  let stored;
-  try{ stored = await sbGet('passcode'); }
+  let ok = false;
+  try{
+    const [{data:a,error:e1}, {data:b,error:e2}] = await Promise.all([
+      sbClient.rpc('verify_passcode', {check_key:'passcode', check_value: input}),
+      sbClient.rpc('verify_passcode', {check_key:'full_access_passcode', check_value: input})
+    ]);
+    if(e1||e2) throw (e1||e2);
+    ok = a===true || b===true;
+  }
   catch(e){ msg.textContent = "Couldn't reach the database. Check your connection and try again."; return; }
-  const correct = stored===null ? DEFAULT_PASSCODE : stored;
-  if(input !== correct){ msg.textContent = 'Incorrect passcode.'; return; }
+  if(!ok){ msg.textContent = 'Incorrect passcode.'; return; }
   const id = pendingDeleteMatchId;
+  try{ await dbDeleteMatch(id); }
+  catch(e){ msg.textContent = "Couldn't delete — check your connection and try again."; return; }
   matches = matches.filter(m=>m.id!==id);
-  await saveMatches();
+  if(currentMatchId===id){ unsubscribeFromMatch(); currentMatchId = null; resetNewMatchForm(); }
   closeDeleteConfirm();
   closeMatchDetail(); renderMatchList(); renderDashMatches();
 }
@@ -1667,6 +2572,7 @@ function openPlayerModal(id){
     isGK ? {num: stats.shotsTotal, lbl:'Total Shots'} : {num: stats.xG.toFixed(2), lbl:'xG'},
     isGK ? {num: (stats.lbA? stats.lbAcc+'%':'-'), lbl:'Long Ball Accuracy'} : {num: (stats.shotsTotal?stats.shotAccuracy+'%':'-'), lbl:'Shot Accuracy'},
     {num: (stats.passA?stats.passAcc+'%':'-'), lbl:'Pass Accuracy'},
+    {num: (stats.avgPassDistance?stats.avgPassDistance+'m':'-'), lbl:'Avg Pass Distance'},
     isGK ? {num: stats.clearances, lbl:'Clearances'} : {num: (stats.tklA?stats.tklAcc+'%':'-'), lbl:'Tackle Success'},
     {num: `${stats.yellow}/${stats.red}`, lbl:'YC / RC'}
   ];
@@ -1752,38 +2658,78 @@ function closePlayerModal(){ document.getElementById('playerModalOverlay').class
 /* ============================================================
    PASSCODE GATE
 ============================================================ */
-const DEFAULT_PASSCODE = 'matchday'; // used only if no passcode row exists yet in Supabase
+// Default passcodes ('matchday' / 'coachonly' / 'allteams') now live server-side
+// only, inside the verify_passcode() database function — see
+// matchday-secure-passcodes-supabase-setup.sql. Change them via the app's
+// Change Passcode screen once that SQL has been run.
+let fullAccess = false;
 async function tryUnlock(){
   const input = document.getElementById('passcodeInput').value;
   const errEl = document.getElementById('lockError');
   errEl.textContent = '';
-  let stored;
-  try{ stored = await sbGet('passcode'); }
-  catch(e){ errEl.textContent = "Couldn't reach the database. Check your connection and try again."; return; }
-  const correct = stored===null ? DEFAULT_PASSCODE : stored;
-  if(input === correct){
-    if(stored===null){ try{ await sbSet('passcode', DEFAULT_PASSCODE); }catch(e){} }
-    document.getElementById('lockScreen').style.display = 'none';
-    document.getElementById('mainApp').style.display = 'block';
-    boot();
-  } else {
-    errEl.textContent = 'Incorrect passcode.';
+  if(!sbClient){ errEl.textContent = "Couldn't reach the database. Check your connection and try again."; return; }
+  let fullOk = false, teamOk = false;
+  try{
+    const [{data:fData,error:fErr}, {data:tData,error:tErr}] = await Promise.all([
+      sbClient.rpc('verify_passcode', {check_key:'full_access_passcode', check_value: input}),
+      sbClient.rpc('verify_passcode', {check_key:'passcode', check_value: input})
+    ]);
+    if(fErr||tErr) throw (fErr||tErr);
+    fullOk = fData===true; teamOk = tData===true;
   }
+  catch(e){ errEl.textContent = "Couldn't reach the database. Check your connection and try again."; return; }
+  if(fullOk){ fullAccess = true; }
+  else if(teamOk){ fullAccess = false; }
+  else { errEl.textContent = 'Incorrect passcode.'; return; }
+  document.getElementById('lockScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+  boot();
 }
 function openChangePasscode(){
+  document.getElementById('adminGateInput').value = '';
+  document.getElementById('adminGateMsg').textContent = '';
+  document.getElementById('adminGateStep').style.display = 'block';
+  document.getElementById('passcodeChangeStep').style.display = 'none';
   document.getElementById('newPasscodeInput').value = '';
+  document.getElementById('newFullAccessPasscodeInput').value = '';
   document.getElementById('passcodeChangeMsg').textContent = '';
   document.getElementById('passcodeModalOverlay').classList.add('show');
 }
 function closeChangePasscode(){ document.getElementById('passcodeModalOverlay').classList.remove('show'); }
-async function submitNewPasscode(){
-  const val = document.getElementById('newPasscodeInput').value.trim();
-  const msg = document.getElementById('passcodeChangeMsg');
-  if(!val){ msg.textContent = 'Enter a passcode first.'; return; }
+async function verifyAdminGate(){
+  const input = document.getElementById('adminGateInput').value;
+  const msg = document.getElementById('adminGateMsg');
+  msg.textContent = '';
+  if(!sbClient){ msg.textContent = "Couldn't reach the database. Check your connection and try again."; return; }
+  let ok = false;
   try{
-    await sbSet('passcode', val);
+    const {data, error} = await sbClient.rpc('verify_passcode', {check_key:'admin_passcode', check_value: input});
+    if(error) throw error;
+    ok = data===true;
+  }
+  catch(e){ msg.textContent = "Couldn't reach the database. Check your connection and try again."; return; }
+  if(!ok){ msg.textContent = 'Incorrect admin passcode.'; return; }
+  document.getElementById('adminGateStep').style.display = 'none';
+  document.getElementById('passcodeChangeStep').style.display = 'block';
+}
+async function submitNewPasscode(){
+  const adminInput = document.getElementById('adminGateInput').value;
+  const teamVal = document.getElementById('newPasscodeInput').value.trim();
+  const fullVal = document.getElementById('newFullAccessPasscodeInput').value.trim();
+  const msg = document.getElementById('passcodeChangeMsg');
+  if(!teamVal && !fullVal){ msg.textContent = 'Enter at least one new passcode.'; return; }
+  if(!sbClient){ msg.textContent = "Couldn't reach the database. Check your connection and try again."; return; }
+  try{
+    if(teamVal){
+      const {data, error} = await sbClient.rpc('admin_set_passcode', {admin_check: adminInput, target_key:'passcode', new_value: teamVal});
+      if(error || data!==true) throw (error || new Error('failed'));
+    }
+    if(fullVal){
+      const {data, error} = await sbClient.rpc('admin_set_passcode', {admin_check: adminInput, target_key:'full_access_passcode', new_value: fullVal});
+      if(error || data!==true) throw (error || new Error('failed'));
+    }
     msg.style.color = 'var(--goal-green)';
-    msg.textContent = 'Passcode updated.';
+    msg.textContent = 'Passcode(s) updated.';
     setTimeout(closeChangePasscode, 900);
   }catch(e){
     msg.style.color = 'var(--goal-red)';
@@ -1800,10 +2746,11 @@ async function boot(){
     const pcLink = document.querySelector('.passcode-link');
     if(pcLink) pcLink.style.display = 'none';
   }
+  await ensureTeamSetup();
   await loadAll();
   renderRoster(); renderDashMatches(); renderMatchList();
   populatePlayerSelects(); renderMinutesTableBody();
-  drawPitch(); drawGoal(); renderShotLog(); renderEventLog(); renderVideoPlayer(); updateShotHint(); drawGkGoalPicker(); drawEventPitch(); updateGkPickerVisibility();
+  drawPitch(); drawGoal(); renderShotLog(); renderEventLog(); renderVideoPlayer(); updateShotHint(); drawGkGoalPicker(); drawEventPitch(); updateGkPickerVisibility(); updateQuickTagLockState();
 }
 if(PREVIEW_MODE){
   document.getElementById('lockScreen').style.display = 'none';
