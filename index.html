@@ -264,11 +264,11 @@
       </div>
       <div class="video-note" style="margin-bottom:6px">Saving to team: <strong id="matchTeamLabel">—</strong></div>
       <button class="btn" id="startMatchBtn" onclick="startMatch()">Start Match</button>
-      <div id="liveMatchBanner" style="display:none;align-items:center;gap:12px;background:var(--amber-tint);border:1px solid var(--amber);border-radius:8px;padding:10px 14px;margin-top:4px">
+      <div id="liveMatchBanner" style="display:none;flex-wrap:wrap;align-items:center;gap:8px 12px;background:var(--amber-tint);border:1px solid var(--amber);border-radius:8px;padding:10px 14px;margin-top:4px">
         <span id="liveStatusDot" class="sync-dot"></span>
         <span id="liveStatusText" style="font-size:12.5px;font-weight:600;color:var(--amber-dim)">Live</span>
-        <span id="liveMatchLabel" style="font-size:12.5px;color:var(--chalk-dim);flex:1"></span>
-        <button class="btn secondary small" onclick="clearOrLeaveMatch()">Pause Match</button>
+        <span id="liveMatchLabel" style="font-size:12.5px;color:var(--chalk-dim);flex:1;min-width:120px"></span>
+        <button class="btn secondary small" style="flex:none" onclick="clearOrLeaveMatch()">Pause Match</button>
       </div>
       <div id="otherLiveMatchesWrap" style="display:none;margin-top:8px">
         <div class="video-note" style="margin-bottom:6px">Other matches live right now — tap to switch:</div>
