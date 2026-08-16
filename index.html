@@ -268,9 +268,13 @@
         <span id="liveStatusDot" class="sync-dot"></span>
         <span id="liveStatusText" style="font-size:12.5px;font-weight:600;color:var(--amber-dim)">Live</span>
         <span id="liveMatchLabel" style="font-size:12.5px;color:var(--chalk-dim);flex:1"></span>
-        <button class="btn secondary small" id="liveMatchResumeBtn" style="display:none" onclick="">Resume</button>
+        <button class="btn secondary small" onclick="clearOrLeaveMatch()">Pause Match</button>
       </div>
-      <div class="video-note">Fill in the opponent and date, then hit Start Match — this creates the shared live match record so you and your assistant coach can both tag it at once, in real time, from separate devices.</div>
+      <div id="otherLiveMatchesWrap" style="display:none;margin-top:8px">
+        <div class="video-note" style="margin-bottom:6px">Other matches live right now — tap to switch:</div>
+        <div id="otherLiveMatchesList"></div>
+      </div>
+      <div class="video-note">Fill in the opponent and date, then hit Start Match — this creates the shared live match record so you and your assistant coach can both tag it at once, in real time, from separate devices. You can Pause a live match at any point and start or resume a different one — both stay live in the background until you Finish &amp; Save them.</div>
     </div>
 
     <div class="panel">
@@ -1296,23 +1300,31 @@ function persistMatchMeta(){
 function checkForLiveMatch(){
   const wrap = document.getElementById('liveMatchBanner');
   const startBtn = document.getElementById('startMatchBtn');
+  const otherWrap = document.getElementById('otherLiveMatchesWrap');
+  const otherList = document.getElementById('otherLiveMatchesList');
   if(!wrap || !startBtn) return;
+
+  const allLive = matches.filter(m=>m.status==='live');
+  const others = allLive.filter(m=>m.id!==currentMatchId);
+
   if(currentMatchId){
     wrap.style.display = 'flex';
     startBtn.style.display = 'none';
     document.getElementById('liveMatchLabel').textContent = 'vs ' + (document.getElementById('mOpponent').value||'') + ' (' + (document.getElementById('mDate').value||'') + ')';
-    return;
-  }
-  const live = matches.find(m=>m.status==='live');
-  if(live){
-    wrap.style.display = 'flex';
-    startBtn.style.display = 'none';
-    document.getElementById('liveMatchLabel').textContent = 'vs ' + live.opponent + ' (' + live.date + ') — tap Resume to join';
-    document.getElementById('liveMatchResumeBtn').style.display = 'inline-block';
-    document.getElementById('liveMatchResumeBtn').onclick = ()=>resumeLiveMatch(live.id);
   } else {
     wrap.style.display = 'none';
     startBtn.style.display = 'inline-block';
+  }
+
+  if(otherWrap && otherList){
+    if(others.length){
+      otherWrap.style.display = 'block';
+      otherList.innerHTML = others.map(m=>`
+        <div class="shot-log-row"><span>vs ${escapeHtml(m.opponent)} (${m.date})</span><span class="btn-ghost" style="margin-left:auto;cursor:pointer" onclick="resumeLiveMatch('${m.id}')">Resume</span></div>
+      `).join('');
+    } else {
+      otherWrap.style.display = 'none';
+    }
   }
   updateLiveGateLock();
 }
@@ -1351,7 +1363,6 @@ async function startMatch(){
   const opponent = document.getElementById('mOpponent').value.trim();
   const date = document.getElementById('mDate').value;
   if(!opponent || !date){ alert('Enter at least the opponent and date first.'); return; }
-  if(matches.find(m=>m.status==='live')){ alert('A match is already live — use Resume instead of starting a new one.'); checkForLiveMatch(); return; }
   const id = uid();
   const matchData = {
     id, date, opponent,
@@ -1395,7 +1406,7 @@ async function finishMatch(){
 }
 function clearOrLeaveMatch(){
   if(currentMatchId){
-    if(!confirm("Stop tagging on this device? The match stays live — your assistant coach (or you on another device) can keep tagging it.")) return;
+    if(!confirm("Pause this match? It stays live in the background — resume it anytime, and you're free to start or resume a different match now.")) return;
     unsubscribeFromMatch();
     currentMatchId = null;
     resetNewMatchForm();
