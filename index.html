@@ -348,6 +348,7 @@
               <div style="text-align:center;margin-bottom:8px"><span class="btn-ghost" onclick="selectAllPitchFilter()">Show all</span> <span class="btn-ghost" onclick="clearPitchFilter()">Clear</span></div>
               <div class="video-note" style="text-align:center">Click anywhere on the pitch to mark where the next event happened — this unlocks the buttons on the left.</div>
               <svg id="eventPitchSvg" viewBox="0 0 400 600" style="width:100%;border-radius:8px;background:var(--pitch-mid);cursor:crosshair;display:block"></svg>
+              <div id="receiveLocationHint" class="video-note" style="display:none;text-align:center;color:var(--amber-dim);font-weight:600;margin-top:6px"></div>
               <div class="legend" id="categoryLegend"></div>
             </div>
           </div>
@@ -359,9 +360,7 @@
           <div id="recipientPicker" class="action-step" style="display:none">
             <label style="margin-bottom:6px">Who received it? <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional — builds the pass network)</span></label>
             <div class="player-select-grid" id="recipientChips"></div>
-            <label style="margin-top:10px;margin-bottom:6px">Where did it land? <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional — measures pass distance)</span></label>
-            <svg id="passDistanceSvg" viewBox="0 0 400 600" style="width:100%;max-width:260px;display:block;margin:0 auto;border-radius:8px;background:var(--pitch-mid);cursor:crosshair"></svg>
-            <div style="text-align:center;margin-top:8px"><span class="btn-ghost" onclick="dismissRecipientPicker()">Done / Skip</span></div>
+            <div style="text-align:center;margin-top:4px"><span class="btn-ghost" onclick="dismissRecipientPicker()">Skip</span></div>
           </div>
         </div>
       </div>
@@ -658,6 +657,19 @@ function drawEventPitch(){
   const legend = document.getElementById('categoryLegend');
   if(legend && !legend.dataset.filled){ legend.innerHTML = categoryLegendHTML(); legend.dataset.filled='1'; }
 }
+let awaitingReceiveForEventId = null;
+function updateReceiveLocationHint(){
+  const hint = document.getElementById('receiveLocationHint');
+  if(!hint) return;
+  if(awaitingReceiveForEventId){
+    const ev = currentEvents.find(e=>e.id===awaitingReceiveForEventId);
+    const player = ev ? players.find(p=>p.id===ev.targetPlayerId) : null;
+    hint.textContent = `📍 Tap the pitch where ${player?player.name:'they'} received it — that spot also becomes the start point for their next action.`;
+    hint.style.display = 'block';
+  } else {
+    hint.style.display = 'none';
+  }
+}
 function onEventPitchClick(evt){
   const svg = document.getElementById('eventPitchSvg');
   const p = svgPoint(svg, evt);
@@ -668,6 +680,21 @@ function onEventPitchClick(evt){
   marker.setAttribute('id','eventPendingMark'); marker.setAttribute('cx', pendingEventLocation.x); marker.setAttribute('cy', pendingEventLocation.y);
   marker.setAttribute('r', 8); marker.setAttribute('fill', 'var(--amber)'); marker.setAttribute('stroke', '#fff'); marker.setAttribute('stroke-width', 1.5);
   svg.appendChild(marker);
+  if(awaitingReceiveForEventId){
+    const passEv = currentEvents.find(e=>e.id===awaitingReceiveForEventId);
+    if(passEv){
+      passEv.endX = pendingEventLocation.x; passEv.endY = pendingEventLocation.y;
+      dbUpdateEvent(passEv.id, {end_x: passEv.endX, end_y: passEv.endY}).catch(()=>{ showConnectionError(); });
+      renderEventLog();
+      const type = EVENT_TYPES.find(t=>t.id===passEv.typeId);
+      const color = type ? (CATEGORY_COLORS[type.cat]||'var(--amber)') : 'var(--amber)';
+      const recipient = passEv.targetPlayerId ? players.find(pp=>pp.id===passEv.targetPlayerId) : null;
+      const recNote = `${recipient?recipient.name:'Received'} \u2022 received here`;
+      svg.insertAdjacentHTML('beforeend', `<line x1="${passEv.x}" y1="${passEv.y}" x2="${passEv.endX}" y2="${passEv.endY}" stroke="${color}" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.7"/><g><title>${escapeHtml(recNote)}</title><circle cx="${passEv.endX}" cy="${passEv.endY}" r="5" fill="var(--panel)" stroke="${color}" stroke-width="2"/></g>`);
+    }
+    awaitingReceiveForEventId = null;
+    updateReceiveLocationHint();
+  }
   updateQuickTagLockState();
 }
 function pitchLocationReady(){ return pendingEventLocation !== null && pendingEventLocation !== undefined; }
@@ -717,6 +744,11 @@ function drawExistingEventMarks(){
     const player = players.find(p=>p.id===e.playerId);
     const note = `${player?player.name:'Unknown'} \u2022 ${type?type.label:e.typeId}${e.timestamp?(' \u2022 '+e.timestamp):''}`;
     html += eventDotSVG(e.x, e.y, color, note);
+    if(e.endX!==undefined && e.endY!==undefined){
+      const recipient = e.targetPlayerId ? players.find(pp=>pp.id===e.targetPlayerId) : null;
+      const recNote = `${recipient?recipient.name:'Received'} \u2022 received here`;
+      html += `<line x1="${e.x}" y1="${e.y}" x2="${e.endX}" y2="${e.endY}" stroke="${color}" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.7"/><g><title>${escapeHtml(recNote)}</title><circle cx="${e.endX}" cy="${e.endY}" r="5" fill="var(--panel)" stroke="${color}" stroke-width="2"/></g>`;
+    }
   });
   svg.insertAdjacentHTML('beforeend', `<g id="eventMarks">${html}</g>`);
 }
@@ -1347,14 +1379,14 @@ function resumeLiveMatch(matchId){
   currentEvents = (m.events||[]).slice();
   currentShots = (m.shots||[]).slice();
   currentSubs = (m.substitutions||[]).slice();
-  myEventIds = []; myShotIds = []; mySubIds = [];
+  myEventIds = []; myShotIds = []; mySubIds = []; lastLoggedEventId = null; awaitingReceiveForEventId = null;
   if(m.videoUrl){ currentVideoMeta = {type: detectVideoType(m.videoUrl), url: m.videoUrl}; }
   renderMinutesTableBody();
   Object.keys(m.minutesByPlayer||{}).forEach(pid=>{
     const input = document.querySelector(`#minutesTableBody tr[data-pid="${pid}"] .min-input`);
     if(input) input.value = m.minutesByPlayer[pid];
   });
-  drawPitch(); drawGoal(); renderShotLog(); renderEventLog(); renderVideoPlayer(); drawEventPitch(); renderStartingLineupChips(); renderSubsLog(); updateQuickTagLockState();
+  drawPitch(); drawGoal(); renderShotLog(); renderEventLog(); renderVideoPlayer(); drawEventPitch(); renderStartingLineupChips(); renderSubsLog(); updateQuickTagLockState(); updateReceiveLocationHint();
   subscribeToMatch(m.id);
   checkForLiveMatch();
 }
@@ -1972,8 +2004,6 @@ function showRecipientPicker(){
   const ev = currentEvents.find(e=>e.id===lastLoggedEventId);
   if(!ev) return;
   renderRecipientChips(ev.playerId);
-  const svg = document.getElementById('passDistanceSvg');
-  if(svg){ svg.innerHTML = fullPitchSVG(); svg.onclick = onPassDistanceClick; }
   wrap.style.display = 'block';
 }
 function renderRecipientChips(passerId){
@@ -1991,6 +2021,8 @@ function setRecipient(playerId){
   dbUpdateEvent(ev.id, {target_player_id: playerId}).catch(()=>{ showConnectionError(); });
   dismissRecipientPicker();
   selectEventPlayerChip(playerId);
+  awaitingReceiveForEventId = ev.id;
+  updateReceiveLocationHint();
 }
 /* Pitch scale: viewBox is 400 wide (68m) x 600 tall (105m) */
 function pxToMeters(dx, dy){
@@ -1998,32 +2030,7 @@ function pxToMeters(dx, dy){
   const my = dy / (600/105);
   return Math.sqrt(mx*mx + my*my);
 }
-function onPassDistanceClick(evt){
-  const ev = lastLoggedEventId!==null ? currentEvents.find(e=>e.id===lastLoggedEventId) : null;
-  if(!ev) return;
-  const svg = document.getElementById('passDistanceSvg');
-  const p = svgPoint(svg, evt);
-  const end = {x: Math.max(4,Math.min(396,p.x)), y: Math.max(4,Math.min(596,p.y))};
-  ev.endX = end.x; ev.endY = end.y;
-  let g = svg.querySelector('#passEndMark');
-  if(g) g.remove();
-  const marker = document.createElementNS('http://www.w3.org/2000/svg','circle');
-  marker.setAttribute('id','passEndMark'); marker.setAttribute('cx', end.x); marker.setAttribute('cy', end.y);
-  marker.setAttribute('r', 8); marker.setAttribute('fill', 'var(--amber)'); marker.setAttribute('stroke', '#fff'); marker.setAttribute('stroke-width', 1.5);
-  svg.appendChild(marker);
-  if(ev.x!==undefined && ev.y!==undefined){
-    const dist = pxToMeters(end.x-ev.x, end.y-ev.y);
-    let label = svg.querySelector('#passEndLabel');
-    if(label) label.remove();
-    const text = document.createElementNS('http://www.w3.org/2000/svg','text');
-    text.setAttribute('id','passEndLabel'); text.setAttribute('x', 200); text.setAttribute('y', 20);
-    text.setAttribute('text-anchor','middle'); text.setAttribute('fill','var(--pitch-white)'); text.setAttribute('font-size','16'); text.setAttribute('font-weight','700');
-    text.textContent = dist.toFixed(1)+' m';
-    svg.appendChild(text);
-  }
-  renderEventLog();
-  dbUpdateEvent(ev.id, {end_x: ev.endX, end_y: ev.endY}).catch(()=>{ showConnectionError(); });
-}
+
 function dismissRecipientPicker(){
   const wrap = document.getElementById('recipientPicker');
   if(wrap) wrap.style.display = 'none';
@@ -2117,6 +2124,7 @@ function removeEvent(id){
   currentEvents = currentEvents.filter(e=>e.id!==id);
   myEventIds = myEventIds.filter(x=>x!==id);
   if(lastLoggedEventId===id) lastLoggedEventId = null;
+  if(awaitingReceiveForEventId===id){ awaitingReceiveForEventId = null; updateReceiveLocationHint(); }
   dismissRecipientPicker();
   drawEventPitch();
   renderEventLog();
@@ -2327,10 +2335,10 @@ function resetNewMatchForm(){
   document.getElementById('mScoreFor').value=0; document.getElementById('mScoreAgainst').value=0;
   document.getElementById('mNotes').value=''; document.getElementById('videoUrlInput').value='';
   document.getElementById('mMatchLength').value=90;
-  currentShots = []; currentEvents = []; pendingShot = null; currentVideoMeta = null; pendingGkType = null; pendingEventLocation = null; pitchFilterPlayerIds = new Set(); lastLoggedEventId = null;
+  currentShots = []; currentEvents = []; pendingShot = null; currentVideoMeta = null; pendingGkType = null; pendingEventLocation = null; pitchFilterPlayerIds = new Set(); lastLoggedEventId = null; awaitingReceiveForEventId = null;
   currentStartingIds = new Set(); currentSubs = [];
   myEventIds = []; myShotIds = []; mySubIds = [];
-  renderMinutesTableBody(); drawPitch(); drawGoal(); renderShotLog(); renderEventLog(); renderVideoPlayer(); updateShotHint(); drawGkGoalPicker(); drawEventPitch(); updateGkPickerVisibility(); renderPitchFilterChips(); dismissRecipientPicker(); updateQuickTagLockState();
+  renderMinutesTableBody(); drawPitch(); drawGoal(); renderShotLog(); renderEventLog(); renderVideoPlayer(); updateShotHint(); drawGkGoalPicker(); drawEventPitch(); updateGkPickerVisibility(); renderPitchFilterChips(); dismissRecipientPicker(); updateQuickTagLockState(); updateReceiveLocationHint();
   renderStartingLineupChips(); renderSubsLog();
   checkForLiveMatch();
 }
@@ -2527,7 +2535,13 @@ function refreshDetailEventMap(){
     const color = type ? (CATEGORY_COLORS[type.cat]||'var(--amber)') : 'var(--amber)';
     const player = players.find(p=>p.id===e.playerId);
     const note = `${player?player.name:'Unknown'} \u2022 ${type?type.label:e.typeId}${e.timestamp?(' \u2022 '+e.timestamp):''}`;
-    return eventDotSVG(e.x, e.y, color, note);
+    let m = eventDotSVG(e.x, e.y, color, note);
+    if(e.endX!==undefined && e.endY!==undefined){
+      const recipient = e.targetPlayerId ? players.find(pp=>pp.id===e.targetPlayerId) : null;
+      const recNote = `${recipient?recipient.name:'Received'} \u2022 received here`;
+      m += `<line x1="${e.x}" y1="${e.y}" x2="${e.endX}" y2="${e.endY}" stroke="${color}" stroke-width="1.5" stroke-dasharray="3 3" opacity="0.7"/><g><title>${escapeHtml(recNote)}</title><circle cx="${e.endX}" cy="${e.endY}" r="5" fill="var(--panel)" stroke="${color}" stroke-width="2"/></g>`;
+    }
+    return m;
   }).join('');
   svg.innerHTML = fullPitchSVG() + marks;
 }
