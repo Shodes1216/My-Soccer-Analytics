@@ -300,6 +300,11 @@
           <input type="file" id="videoFileInput" accept="video/*" style="display:none" onchange="loadLocalVideo(event)">
           <div id="videoPlayerWrap"></div>
           <div id="videoControlsExtra"></div>
+          <div class="video-speed-row" id="kickoffRow">
+            <input id="kickoffTimeInput" placeholder="mm:ss" style="max-width:80px;margin:0">
+            <button type="button" class="jump-btn" onclick="setKickoffTimestamp()">Set Kickoff</button>
+            <span id="jumpToKickoffBtn" class="btn-ghost" style="display:none;cursor:pointer" onclick="jumpToKickoff()">⏮ Jump to Kickoff</span>
+          </div>
           <div class="video-note">A linked video URL is saved with the match, so your assistant coach can open it too. A local file only plays on this device for this session — it can't be saved or shared, since it never leaves your computer. Click any event's timestamp below to jump the video straight to that moment.</div>
         </div>
         <div class="wizard-step">
@@ -1193,7 +1198,7 @@ async function dbLoadFullMatches(){
     id:r.id, date:r.date, opponent:r.opponent, homeAway:r.home_away,
     scoreFor:r.score_for||0, scoreAgainst:r.score_against||0, notes:r.notes||'',
     matchLengthMinutes:r.match_length_minutes||90, startingPlayerIds:r.starting_player_ids||[],
-    minutesByPlayer:r.minutes_by_player||{}, videoUrl:r.video_url||'', status:r.status||'final',
+    minutesByPlayer:r.minutes_by_player||{}, videoUrl:r.video_url||'', kickoffTimestamp:r.kickoff_timestamp||'', status:r.status||'final',
     events: evByMatch[r.id]||[], shots: shotByMatch[r.id]||[], substitutions: subByMatch[r.id]||[]
   }));
 }
@@ -1316,6 +1321,19 @@ function subscribeToMatch(matchId){
       currentSubs = currentSubs.filter(x=>x.id!==payload.old.id);
       renderSubsLog();
     })
+    .on('postgres_changes', {event:'UPDATE', schema:'public', table:'matches', filter:'id=eq.'+matchId}, payload=>{
+      const r = payload.new;
+      if(r.video_url && (!currentVideoMeta || currentVideoMeta.url !== r.video_url)){
+        currentVideoMeta = {type: detectVideoType(r.video_url), url: r.video_url};
+        const input = document.getElementById('videoUrlInput');
+        if(input) input.value = r.video_url;
+        renderVideoPlayer();
+      }
+      if(r.kickoff_timestamp && r.kickoff_timestamp !== matchKickoffTimestamp){
+        matchKickoffTimestamp = r.kickoff_timestamp;
+        updateKickoffUI();
+      }
+    })
     .subscribe(status=>{ updateLiveStatusIndicator(status); });
 }
 function unsubscribeFromMatch(){
@@ -1380,7 +1398,9 @@ function resumeLiveMatch(matchId){
   currentShots = (m.shots||[]).slice();
   currentSubs = (m.substitutions||[]).slice();
   myEventIds = []; myShotIds = []; mySubIds = []; lastLoggedEventId = null; awaitingReceiveForEventId = null;
-  if(m.videoUrl){ currentVideoMeta = {type: detectVideoType(m.videoUrl), url: m.videoUrl}; }
+  if(m.videoUrl){ currentVideoMeta = {type: detectVideoType(m.videoUrl), url: m.videoUrl}; document.getElementById('videoUrlInput').value = m.videoUrl; }
+  matchKickoffTimestamp = m.kickoffTimestamp || '';
+  updateKickoffUI();
   renderMinutesTableBody();
   Object.keys(m.minutesByPlayer||{}).forEach(pid=>{
     const input = document.querySelector(`#minutesTableBody tr[data-pid="${pid}"] .min-input`);
@@ -1410,6 +1430,8 @@ async function startMatch(){
   try{ await dbCreateMatch(matchData); }
   catch(e){ alert("Couldn't start the match — check your connection and try again."); return; }
   currentMatchId = id;
+  matchKickoffTimestamp = '';
+  updateKickoffUI();
   matches.push({...matchData, status:'live', events:[], shots:[], substitutions:[]});
   subscribeToMatch(id);
   checkForLiveMatch();
@@ -1878,11 +1900,38 @@ function detectVideoType(url){
 function extractYouTubeId(url){ const m = url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([\w-]{11})/); return m? m[1] : null; }
 function extractVimeoId(url){ const m = url.match(/vimeo\.com\/(?:.*\/)?(\d+)/); return m? m[1] : null; }
 
+let matchKickoffTimestamp = '';
+function updateKickoffUI(){
+  const btn = document.getElementById('jumpToKickoffBtn');
+  if(btn) btn.style.display = matchKickoffTimestamp ? 'inline-block' : 'none';
+}
+async function setKickoffTimestamp(){
+  if(!currentMatchId){ alert('Start (or resume) the match first.'); return; }
+  const input = document.getElementById('kickoffTimeInput');
+  let ts = input.value.trim();
+  if(!ts && currentVideoEl){ ts = formatSeconds(currentVideoEl.currentTime); }
+  if(!ts){ alert("Enter the kickoff time (mm:ss). For a loaded local file, you can leave this blank and it'll use the video's current position instead."); return; }
+  matchKickoffTimestamp = ts;
+  updateKickoffUI();
+  input.value = '';
+  const m = matches.find(x=>x.id===currentMatchId);
+  if(m) m.kickoffTimestamp = ts;
+  try{ await dbUpdateMatch(currentMatchId, {kickoff_timestamp: ts}); }
+  catch(e){ showConnectionError(); }
+}
+function jumpToKickoff(){
+  if(matchKickoffTimestamp) seekToEvent(matchKickoffTimestamp);
+}
 function loadVideo(){
   const url = document.getElementById('videoUrlInput').value.trim();
   if(!url) return;
   currentVideoMeta = {type: detectVideoType(url), url};
   renderVideoPlayer();
+  if(currentMatchId){
+    dbUpdateMatch(currentMatchId, {video_url: url}).catch(()=>{ showConnectionError(); });
+    const m = matches.find(x=>x.id===currentMatchId);
+    if(m) m.videoUrl = url;
+  }
 }
 function loadLocalVideo(evt){
   const file = evt.target.files[0];
@@ -2335,10 +2384,10 @@ function resetNewMatchForm(){
   document.getElementById('mScoreFor').value=0; document.getElementById('mScoreAgainst').value=0;
   document.getElementById('mNotes').value=''; document.getElementById('videoUrlInput').value='';
   document.getElementById('mMatchLength').value=90;
-  currentShots = []; currentEvents = []; pendingShot = null; currentVideoMeta = null; pendingGkType = null; pendingEventLocation = null; pitchFilterPlayerIds = new Set(); lastLoggedEventId = null; awaitingReceiveForEventId = null;
+  currentShots = []; currentEvents = []; pendingShot = null; currentVideoMeta = null; pendingGkType = null; pendingEventLocation = null; pitchFilterPlayerIds = new Set(); lastLoggedEventId = null; awaitingReceiveForEventId = null; matchKickoffTimestamp = '';
   currentStartingIds = new Set(); currentSubs = [];
   myEventIds = []; myShotIds = []; mySubIds = [];
-  renderMinutesTableBody(); drawPitch(); drawGoal(); renderShotLog(); renderEventLog(); renderVideoPlayer(); updateShotHint(); drawGkGoalPicker(); drawEventPitch(); updateGkPickerVisibility(); renderPitchFilterChips(); dismissRecipientPicker(); updateQuickTagLockState(); updateReceiveLocationHint();
+  renderMinutesTableBody(); drawPitch(); drawGoal(); renderShotLog(); renderEventLog(); renderVideoPlayer(); updateShotHint(); drawGkGoalPicker(); drawEventPitch(); updateGkPickerVisibility(); renderPitchFilterChips(); dismissRecipientPicker(); updateQuickTagLockState(); updateReceiveLocationHint(); updateKickoffUI();
   renderStartingLineupChips(); renderSubsLog();
   checkForLiveMatch();
 }
@@ -2600,6 +2649,7 @@ function openMatchDetail(id){
       <div class="wizard-label">🎬 Game Film <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--chalk-dim)">— click any timestamp below to jump here</span></div>
       <div class="chart-box" style="margin-bottom:12px">${renderMatchDetailVideo(m)}</div>
       <div id="detailVideoControlsExtra"></div>
+      ${m.kickoffTimestamp ? `<div style="margin-top:8px"><span class="btn-ghost" style="cursor:pointer" onclick="seekDetailVideo('${m.kickoffTimestamp}')">⏮ Jump to Kickoff</span></div>` : ''}
     </div>
     ${renderMatchDetailEventMap(m)}
     ${renderMatchDetailEvents(m)}
