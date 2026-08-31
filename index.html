@@ -557,6 +557,19 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="deleteOrgConfirmModalOverlay" onclick="if(event.target===this) closeDeleteOrgConfirm()">
+  <div class="modal-box" style="max-width:360px">
+    <span class="modal-close" onclick="closeDeleteOrgConfirm()">✕</span>
+    <h2 style="font-size:16px;color:var(--goal-red)">Delete <span id="deleteOrgNameLabel"></span>?</h2>
+    <div class="video-note" style="margin-bottom:10px">This permanently deletes this org AND every team, roster, and match tied to it. This can't be undone. Enter the full-access passcode to confirm.</div>
+    <label>Full-access passcode</label>
+    <input type="password" id="deleteOrgConfirmPasscodeInput" placeholder="Passcode" onkeydown="if(event.key==='Enter') confirmDeleteOrg()">
+    <button class="btn danger" style="width:100%" onclick="confirmDeleteOrg()">Delete org</button>
+    <div id="deleteOrgConfirmMsg" class="lock-error"></div>
+  </div>
+</div>
+
+
 <div class="modal-overlay" id="shortcutsModalOverlay" onclick="if(event.target===this) closeShortcutsHelp()">
   <div class="modal-box" style="max-width:480px">
     <span class="modal-close" onclick="closeShortcutsHelp()">✕</span>
@@ -1715,8 +1728,79 @@ function renderOrgsList(){
   const list = document.getElementById('orgsList');
   if(list){
     list.innerHTML = orgs.length===0 ? '<div class="empty">No orgs yet — add one above.</div>' :
-      orgs.map(o=>`<div class="roster-item"><div class="name" style="flex:1">${escapeHtml(o.name)}</div></div>`).join('');
+      orgs.map(o=>`<div class="roster-item">
+        <div class="name" style="flex:1">${escapeHtml(o.name)}</div>
+        <div class="btn-ghost" style="cursor:pointer" onclick="renameOrg('${o.id}')">Rename</div>
+        <div class="del" onclick="openDeleteOrgConfirm('${o.id}')">Delete</div>
+      </div>`).join('');
   }
+}
+async function dbRenameOrg(id, name){
+  if(PREVIEW_MODE || !sbClient) return true;
+  const {error} = await sbClient.from('orgs').update({name}).eq('id', id);
+  if(error) throw error;
+  return true;
+}
+async function dbDeleteOrg(id){
+  if(PREVIEW_MODE || !sbClient) return true;
+  const {error} = await sbClient.from('orgs').delete().eq('id', id);
+  if(error) throw error;
+  return true;
+}
+async function renameOrg(id){
+  const o = orgs.find(x=>x.id===id);
+  if(!o) return;
+  const newName = prompt('New name for this org:', o.name);
+  if(!newName || !newName.trim() || newName.trim()===o.name) return;
+  const trimmed = newName.trim();
+  o.name = trimmed;
+  renderOrgsList();
+  try{ await dbRenameOrg(id, trimmed); }
+  catch(e){ alert("Couldn't save the new name — check your connection and try again."); }
+}
+let pendingDeleteOrgId = null;
+function openDeleteOrgConfirm(id){
+  const o = orgs.find(x=>x.id===id);
+  if(!o) return;
+  pendingDeleteOrgId = id;
+  document.getElementById('deleteOrgNameLabel').textContent = o.name;
+  document.getElementById('deleteOrgConfirmPasscodeInput').value = '';
+  document.getElementById('deleteOrgConfirmMsg').textContent = '';
+  document.getElementById('deleteOrgConfirmModalOverlay').classList.add('show');
+}
+function closeDeleteOrgConfirm(){
+  document.getElementById('deleteOrgConfirmModalOverlay').classList.remove('show');
+  pendingDeleteOrgId = null;
+}
+async function confirmDeleteOrg(){
+  if(!pendingDeleteOrgId) return;
+  const input = document.getElementById('deleteOrgConfirmPasscodeInput').value;
+  const msg = document.getElementById('deleteOrgConfirmMsg');
+  msg.textContent = '';
+  let ok = false;
+  try{
+    const {data, error} = await sbClient.rpc('verify_passcode', {check_key:'full_access_passcode', check_value: input});
+    if(error) throw error;
+    ok = data===true;
+  }
+  catch(e){ msg.textContent = "Couldn't reach the database. Check your connection and try again."; return; }
+  if(!ok){ msg.textContent = 'Incorrect passcode.'; return; }
+  const id = pendingDeleteOrgId;
+  try{ await dbDeleteOrg(id); }
+  catch(e){ msg.textContent = "Couldn't delete — check your connection and try again."; return; }
+  orgs = orgs.filter(o=>o.id!==id);
+  teams = teams.filter(t=>t.org_id!==id);
+  closeDeleteOrgConfirm();
+  if(!teams.find(t=>t.id===activeTeamId)){
+    activeTeamId = teams.length ? teams[0].id : null;
+    if(activeTeamId){ localStorage.setItem('matchday_active_team_id', activeTeamId); }
+    else{ localStorage.removeItem('matchday_active_team_id'); }
+    await loadAll();
+    renderRoster(); renderDashMatches(); renderMatchList(); renderPlayerChips();
+    populatePlayerSelects(); renderMinutesSummary(); renderTeamDashboard();
+    resetNewMatchForm();
+  }
+  renderTeamSwitcher(); renderTeamsList(); renderOrgsList();
 }
 async function addOrg(){
   const name = document.getElementById('newOrgName').value.trim();
