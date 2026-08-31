@@ -359,7 +359,7 @@
               <div class="player-select-grid" id="pitchFilterChips" style="justify-content:center"></div>
               <div style="text-align:center;margin-bottom:8px"><span class="btn-ghost" onclick="selectAllPitchFilter()">Show all</span> <span class="btn-ghost" onclick="clearPitchFilter()">Clear</span></div>
               <div class="video-note" style="text-align:center">Tap the zone where the next event happened — this unlocks the buttons on the left.</div>
-              <svg id="eventPitchSvg" viewBox="-26 -26 452 652" style="width:100%;border-radius:8px;background:var(--panel);cursor:crosshair;display:block"></svg>
+              <svg id="eventPitchSvg" viewBox="-32 -32 464 664" style="width:100%;border-radius:8px;background:var(--panel);cursor:crosshair;display:block"></svg>
               <div id="receiveLocationHint" class="video-note" style="display:none;text-align:center;color:var(--amber-dim);font-weight:600;margin-top:6px"></div>
               <div class="legend" id="categoryLegend"></div>
             </div>
@@ -641,20 +641,20 @@ function categoryLegendHTML(){
   return EVENT_CATS.map(cat=>`<span><span class="dot" style="background:${CATEGORY_COLORS[cat]}"></span>${cat}</span>`).join('');
 }
 const PITCH_X1=2, PITCH_X2=398, PITCH_Y1=2, PITCH_Y2=598;
-const PITCH_MARGIN = 28;
+const PITCH_MARGIN = 34;
 function pitchRulerSVG(){
   let html = '';
   const widthTicks = [0,10,20,30,40,50,60,68];
   widthTicks.forEach(m=>{
     const x = PITCH_X1 + (m/68)*(PITCH_X2-PITCH_X1);
-    html += `<line x1="${x}" y1="${PITCH_Y1-PITCH_MARGIN+8}" x2="${x}" y2="${PITCH_Y1}" stroke="rgba(26,35,50,0.3)" stroke-width="1"/>`;
-    html += `<text x="${x}" y="${PITCH_Y1-PITCH_MARGIN+7}" text-anchor="middle" font-size="8" fill="var(--chalk-dim)" font-family="Inter,sans-serif">${m}m</text>`;
+    html += `<line x1="${x}" y1="${PITCH_Y1-12}" x2="${x}" y2="${PITCH_Y1}" stroke="rgba(26,35,50,0.3)" stroke-width="1"/>`;
+    html += `<text x="${x}" y="${PITCH_Y1-16}" text-anchor="middle" font-size="8" fill="var(--chalk-dim)" font-family="Inter,sans-serif">${m}m</text>`;
   });
   const lengthTicks = [0,10,20,30,40,50,60,70,80,90,100,105];
   lengthTicks.forEach(m=>{
     const y = PITCH_Y1 + (m/105)*(PITCH_Y2-PITCH_Y1);
-    html += `<line x1="${PITCH_X1-PITCH_MARGIN+8}" y1="${y}" x2="${PITCH_X1}" y2="${y}" stroke="rgba(26,35,50,0.3)" stroke-width="1"/>`;
-    html += `<text x="${PITCH_X1-PITCH_MARGIN+6}" y="${y+3}" text-anchor="end" font-size="8" fill="var(--chalk-dim)" font-family="Inter,sans-serif">${m}</text>`;
+    html += `<line x1="${PITCH_X1-12}" y1="${y}" x2="${PITCH_X1}" y2="${y}" stroke="rgba(26,35,50,0.3)" stroke-width="1"/>`;
+    html += `<text x="${PITCH_X1-16}" y="${y+3}" text-anchor="end" font-size="8" fill="var(--chalk-dim)" font-family="Inter,sans-serif">${m}</text>`;
   });
   return html;
 }
@@ -2643,7 +2643,7 @@ function renderMatchDetailEventMap(match){
       <label>Show on pitch (pick players — none selected means the pitch stays clear)</label>
       <div class="player-select-grid" id="detailPitchFilterChips" style="justify-content:center"></div>
       <div style="text-align:center;margin-bottom:8px"><span class="btn-ghost" onclick="selectAllDetailPitchFilter()">Show all</span> <span class="btn-ghost" onclick="clearDetailPitchFilter()">Clear</span></div>
-      <svg id="detailEventPitchSvg" viewBox="-26 -26 452 652" style="width:100%;border-radius:8px;background:var(--panel);display:block">${fullPitchSVG()}</svg>
+      <svg id="detailEventPitchSvg" viewBox="-32 -32 464 664" style="width:100%;border-radius:8px;background:var(--panel);display:block">${fullPitchSVG()}</svg>
       <div class="legend">${categoryLegendHTML()}</div>
     </div>`;
 }
