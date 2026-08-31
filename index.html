@@ -277,17 +277,18 @@
       <div class="video-note">Fill in the opponent and date, then hit Start Match — this creates the shared live match record so you and your assistant coach can both tag it at once, in real time, from separate devices. You can Pause a live match at any point and start or resume a different one — both stay live in the background until you Finish &amp; Save them.</div>
     </div>
 
-    <div class="panel">
-      <h2>Minutes Played<span class="yard"></span></h2>
-      <div class="table-wrap">
-        <table class="stats"><thead><tr><th>Player</th><th>Minutes</th></tr></thead><tbody id="minutesTableBody"></tbody></table>
-      </div>
-    </div>
-
     <div class="panel live-gate">
       <h2>Match Events<span class="yard"></span></h2>
       <div class="live-gate-message video-note" style="color:var(--goal-red);font-weight:600">⚠ Start or resume the match above to begin tagging.</div>
       <div class="video-note">Tap a player, then tap what happened — it logs instantly (with the video's current time, if one's loaded). No dropdowns, no extra clicks. <span class="shortcuts-btn" onclick="openShortcutsHelp()">Keyboard shortcuts</span></div>
+
+      <div class="wizard-step">
+        <div class="wizard-label">📥 Import Events (CSV)</div>
+        <div class="video-note" style="margin-bottom:8px">Import passes detected by the film-review pipeline straight into this live match.</div>
+        <input type="file" id="liveImportCsvInput" accept=".csv" style="display:none" onchange="handleLiveImportCsvSelected(event)">
+        <label class="file-btn" for="liveImportCsvInput">Choose CSV file</label>
+        <div id="liveImportPreviewArea"></div>
+      </div>
 
       <div class="side-by-side">
         <div class="wizard-step">
@@ -305,13 +306,18 @@
             <button type="button" class="jump-btn" onclick="setKickoffTimestamp()">Set Kickoff</button>
             <span id="jumpToKickoffBtn" class="btn-ghost" style="display:none;cursor:pointer" onclick="jumpToKickoff()">⏮ Jump to Kickoff</span>
           </div>
+          <div class="video-speed-row" id="secondHalfKickoffRow">
+            <input id="secondHalfKickoffTimeInput" placeholder="mm:ss" style="max-width:80px;margin:0">
+            <button type="button" class="jump-btn" onclick="setSecondHalfKickoffTimestamp()">Set 2nd Half Kickoff</button>
+            <span id="jumpToSecondHalfKickoffBtn" class="btn-ghost" style="display:none;cursor:pointer" onclick="jumpToSecondHalfKickoff()">⏮ Jump to 2nd Half Kickoff</span>
+          </div>
           <div class="video-note">A linked video URL is saved with the match, so your assistant coach can open it too. A local file only plays on this device for this session — it can't be saved or shared, since it never leaves your computer. Click any event's timestamp below to jump the video straight to that moment.</div>
         </div>
         <div class="wizard-step">
           <div class="wizard-label">🔁 Starting Lineup &amp; Substitutions</div>
-          <div class="video-note">Optional — mark who started and log subs as they happen, and minutes fill in automatically on the Minutes Played panel. You can still edit any player's minutes by hand afterward.</div>
+          <div class="video-note">Mark who started and log subs as they happen — minutes below update automatically, no manual entry needed.</div>
           <div class="row">
-            <div style="max-width:160px"><label>Match length (min)</label><input type="number" id="mMatchLength" value="90" min="1"></div>
+            <div style="max-width:160px"><label>Match length (min)</label><input type="number" id="mMatchLength" value="90" min="1" onchange="renderMinutesSummary(); persistMatchMeta();"></div>
           </div>
           <label>Who started?</label>
           <div class="player-select-grid" id="startingLineupChips"></div>
@@ -320,9 +326,10 @@
             <input id="subMinute" type="number" placeholder="Minute" style="max-width:90px;margin:0" min="0">
             <button class="btn secondary" onclick="logSub('in')">Sub In</button>
             <button class="btn secondary" onclick="logSub('out')">Sub Out</button>
-            <button class="btn" onclick="recalcMinutesFromSubs()">Calculate minutes</button>
           </div>
           <div class="shot-log" id="subsLog"></div>
+          <label style="margin-top:10px">Minutes (auto-calculated)</label>
+          <div class="legend" id="minutesSummary" style="margin-top:0"></div>
         </div>
       </div>
 
@@ -335,7 +342,7 @@
           <div class="wizard-step">
             <div class="wizard-label"><span class="num">3</span>Tap what happened <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--chalk-dim)">(unlocks once you've marked the pitch)</span></div>
             <div id="quickTagGrid"></div>
-            <div id="pitchRequiredHint" class="video-note" style="display:none;color:var(--amber-dim);font-weight:600;margin-bottom:10px">⚠ Mark where it happened on the pitch first — see step 2, on the right.</div>
+            <div id="pitchRequiredHint" class="video-note" style="display:none;color:var(--amber-dim);font-weight:600;margin-bottom:10px">⚠ Tap a zone on the pitch first — see step 2, on the right.</div>
             <div class="shot-controls" style="margin-top:10px">
               <button class="btn-ghost" onclick="repeatLastEvent()">Repeat last <span class="key-badge" style="background:var(--chalk-dim)">.</span></button>
               <button class="btn-ghost" onclick="undoLastEvent()">Undo last <span class="key-badge" style="background:var(--chalk-dim)">,</span></button>
@@ -351,8 +358,8 @@
               <label>Show on pitch (pick players — none selected means the pitch stays clear)</label>
               <div class="player-select-grid" id="pitchFilterChips" style="justify-content:center"></div>
               <div style="text-align:center;margin-bottom:8px"><span class="btn-ghost" onclick="selectAllPitchFilter()">Show all</span> <span class="btn-ghost" onclick="clearPitchFilter()">Clear</span></div>
-              <div class="video-note" style="text-align:center">Click anywhere on the pitch to mark where the next event happened — this unlocks the buttons on the left.</div>
-              <svg id="eventPitchSvg" viewBox="0 0 400 600" style="width:100%;border-radius:8px;background:var(--pitch-mid);cursor:crosshair;display:block"></svg>
+              <div class="video-note" style="text-align:center">Tap the zone where the next event happened — this unlocks the buttons on the left.</div>
+              <svg id="eventPitchSvg" viewBox="-26 -26 452 652" style="width:100%;border-radius:8px;background:var(--panel);cursor:crosshair;display:block"></svg>
               <div id="receiveLocationHint" class="video-note" style="display:none;text-align:center;color:var(--amber-dim);font-weight:600;margin-top:6px"></div>
               <div class="legend" id="categoryLegend"></div>
             </div>
@@ -633,9 +640,29 @@ function eventTypeSelectHTML(){
 function categoryLegendHTML(){
   return EVENT_CATS.map(cat=>`<span><span class="dot" style="background:${CATEGORY_COLORS[cat]}"></span>${cat}</span>`).join('');
 }
+const PITCH_X1=2, PITCH_X2=398, PITCH_Y1=2, PITCH_Y2=598;
+const PITCH_MARGIN = 28;
+function pitchRulerSVG(){
+  let html = '';
+  const widthTicks = [0,10,20,30,40,50,60,68];
+  widthTicks.forEach(m=>{
+    const x = PITCH_X1 + (m/68)*(PITCH_X2-PITCH_X1);
+    html += `<line x1="${x}" y1="${PITCH_Y1-PITCH_MARGIN+8}" x2="${x}" y2="${PITCH_Y1}" stroke="rgba(26,35,50,0.3)" stroke-width="1"/>`;
+    html += `<text x="${x}" y="${PITCH_Y1-PITCH_MARGIN+7}" text-anchor="middle" font-size="8" fill="var(--chalk-dim)" font-family="Inter,sans-serif">${m}m</text>`;
+  });
+  const lengthTicks = [0,10,20,30,40,50,60,70,80,90,100,105];
+  lengthTicks.forEach(m=>{
+    const y = PITCH_Y1 + (m/105)*(PITCH_Y2-PITCH_Y1);
+    html += `<line x1="${PITCH_X1-PITCH_MARGIN+8}" y1="${y}" x2="${PITCH_X1}" y2="${y}" stroke="rgba(26,35,50,0.3)" stroke-width="1"/>`;
+    html += `<text x="${PITCH_X1-PITCH_MARGIN+6}" y="${y+3}" text-anchor="end" font-size="8" fill="var(--chalk-dim)" font-family="Inter,sans-serif">${m}</text>`;
+  });
+  return html;
+}
 function fullPitchSVG(){
   return `
-    <rect x="2" y="2" width="396" height="596" fill="none" stroke="var(--pitch-line)" stroke-width="2"/>
+    <rect x="${PITCH_X1-PITCH_MARGIN}" y="${PITCH_Y1-PITCH_MARGIN}" width="${(PITCH_X2-PITCH_X1)+PITCH_MARGIN*2}" height="${(PITCH_Y2-PITCH_Y1)+PITCH_MARGIN*2}" fill="var(--panel)"/>
+    ${pitchRulerSVG()}
+    <rect x="2" y="2" width="396" height="596" fill="var(--pitch-mid)" stroke="var(--pitch-line)" stroke-width="2"/>
     <line x1="2" y1="300" x2="398" y2="300" stroke="var(--pitch-line)" stroke-width="1.5"/>
     <circle cx="200" cy="300" r="55" fill="none" stroke="var(--pitch-line)" stroke-width="1.5"/>
     <circle cx="200" cy="300" r="2.5" fill="var(--pitch-line)"/>
@@ -653,11 +680,49 @@ function eventDotSVG(x,y,color,note){
   return `<g>${note?`<title>${escapeHtml(note)}</title>`:''}<circle cx="${x}" cy="${y}" r="7" fill="${color}" stroke="#0b1310" stroke-width="1.2" opacity="0.95"/></g>`;
 }
 let pendingEventLocation = null;
+const PITCH_ZONE_ROWS = 3, PITCH_ZONE_COLS = 5;
+const ZONE_ROW_LABELS = ['Attacking Third','Middle Third','Defending Third'];
+const ZONE_ROW_ABBR = ['ATT','MID','DEF'];
+const ZONE_COL_LABELS = ['Left Wide','Left Half-Space','Center','Right Half-Space','Right Wide'];
+const ZONE_COL_ABBR = ['L WIDE','L HALF','CENTER','R HALF','R WIDE'];
+function zoneRect(row, col){
+  const colW = (PITCH_X2-PITCH_X1)/PITCH_ZONE_COLS;
+  const rowH = (PITCH_Y2-PITCH_Y1)/PITCH_ZONE_ROWS;
+  return {x: PITCH_X1+col*colW, y: PITCH_Y1+row*rowH, w: colW, h: rowH};
+}
+function zonePointFor(row, col){
+  const r = zoneRect(row, col);
+  const jitterX = (Math.random()-0.5) * r.w * 0.5;
+  const jitterY = (Math.random()-0.5) * r.h * 0.5;
+  return {x: r.x + r.w/2 + jitterX, y: r.y + r.h/2 + jitterY};
+}
+function pitchZoneGridSVG(){
+  let html = '';
+  for(let row=0; row<PITCH_ZONE_ROWS; row++){
+    for(let col=0; col<PITCH_ZONE_COLS; col++){
+      const r = zoneRect(row, col);
+      const title = `${ZONE_ROW_LABELS[row]} \u2014 ${ZONE_COL_LABELS[col]}`;
+      html += `<g class="pitch-zone" data-row="${row}" data-col="${col}" style="cursor:pointer" onclick="selectPitchZone(${row},${col})">
+        <title>${escapeHtml(title)}</title>
+        <rect x="${r.x}" y="${r.y}" width="${r.w}" height="${r.h}" fill="rgba(255,255,255,0.02)" stroke="rgba(245,243,234,0.22)" stroke-width="1"/>
+        <text x="${r.x+r.w/2}" y="${r.y+r.h/2-5}" text-anchor="middle" font-size="9" font-weight="700" fill="rgba(245,243,234,0.6)" font-family="Inter,sans-serif" pointer-events="none">${ZONE_ROW_ABBR[row]}</text>
+        <text x="${r.x+r.w/2}" y="${r.y+r.h/2+8}" text-anchor="middle" font-size="8" fill="rgba(245,243,234,0.5)" font-family="Inter,sans-serif" pointer-events="none">${ZONE_COL_ABBR[col]}</text>
+      </g>`;
+    }
+  }
+  return html;
+}
+function highlightSelectedZone(row, col){
+  const svg = document.getElementById('eventPitchSvg');
+  if(!svg) return;
+  svg.querySelectorAll('.pitch-zone rect').forEach(r=>r.setAttribute('fill','rgba(255,255,255,0.02)'));
+  const sel = svg.querySelector(`.pitch-zone[data-row="${row}"][data-col="${col}"] rect`);
+  if(sel) sel.setAttribute('fill','rgba(47,111,237,0.4)');
+}
 function drawEventPitch(){
   const svg = document.getElementById('eventPitchSvg');
   if(!svg) return;
-  svg.innerHTML = fullPitchSVG();
-  svg.addEventListener('click', onEventPitchClick);
+  svg.innerHTML = fullPitchSVG() + pitchZoneGridSVG();
   drawExistingEventMarks();
   const legend = document.getElementById('categoryLegend');
   if(legend && !legend.dataset.filled){ legend.innerHTML = categoryLegendHTML(); legend.dataset.filled='1'; }
@@ -669,22 +734,17 @@ function updateReceiveLocationHint(){
   if(awaitingReceiveForEventId){
     const ev = currentEvents.find(e=>e.id===awaitingReceiveForEventId);
     const player = ev ? players.find(p=>p.id===ev.targetPlayerId) : null;
-    hint.textContent = `📍 Tap the pitch where ${player?player.name:'they'} received it — that spot also becomes the start point for their next action.`;
+    hint.textContent = `📍 Tap the zone where ${player?player.name:'they'} received it — that zone also becomes the start point for their next action.`;
     hint.style.display = 'block';
   } else {
     hint.style.display = 'none';
   }
 }
-function onEventPitchClick(evt){
+function selectPitchZone(row, col){
   const svg = document.getElementById('eventPitchSvg');
-  const p = svgPoint(svg, evt);
-  pendingEventLocation = {x: Math.max(4,Math.min(396,p.x)), y: Math.max(4,Math.min(596,p.y))};
-  let g = svg.querySelector('#eventPendingMark');
-  if(g) g.remove();
-  const marker = document.createElementNS('http://www.w3.org/2000/svg','circle');
-  marker.setAttribute('id','eventPendingMark'); marker.setAttribute('cx', pendingEventLocation.x); marker.setAttribute('cy', pendingEventLocation.y);
-  marker.setAttribute('r', 8); marker.setAttribute('fill', 'var(--amber)'); marker.setAttribute('stroke', '#fff'); marker.setAttribute('stroke-width', 1.5);
-  svg.appendChild(marker);
+  const p = zonePointFor(row, col);
+  pendingEventLocation = {x: p.x, y: p.y};
+  highlightSelectedZone(row, col);
   if(awaitingReceiveForEventId){
     const passEv = currentEvents.find(e=>e.id===awaitingReceiveForEventId);
     if(passEv){
@@ -1198,7 +1258,7 @@ async function dbLoadFullMatches(){
     id:r.id, date:r.date, opponent:r.opponent, homeAway:r.home_away,
     scoreFor:r.score_for||0, scoreAgainst:r.score_against||0, notes:r.notes||'',
     matchLengthMinutes:r.match_length_minutes||90, startingPlayerIds:r.starting_player_ids||[],
-    minutesByPlayer:r.minutes_by_player||{}, videoUrl:r.video_url||'', kickoffTimestamp:r.kickoff_timestamp||'', status:r.status||'final',
+    minutesByPlayer:r.minutes_by_player||{}, videoUrl:r.video_url||'', kickoffTimestamp:r.kickoff_timestamp||'', secondHalfKickoffTimestamp:r.second_half_kickoff_timestamp||'', status:r.status||'final',
     events: evByMatch[r.id]||[], shots: shotByMatch[r.id]||[], substitutions: subByMatch[r.id]||[]
   }));
 }
@@ -1333,6 +1393,10 @@ function subscribeToMatch(matchId){
         matchKickoffTimestamp = r.kickoff_timestamp;
         updateKickoffUI();
       }
+      if(r.second_half_kickoff_timestamp && r.second_half_kickoff_timestamp !== matchSecondHalfKickoffTimestamp){
+        matchSecondHalfKickoffTimestamp = r.second_half_kickoff_timestamp;
+        updateKickoffUI();
+      }
     })
     .subscribe(status=>{ updateLiveStatusIndicator(status); });
 }
@@ -1400,12 +1464,9 @@ function resumeLiveMatch(matchId){
   myEventIds = []; myShotIds = []; mySubIds = []; lastLoggedEventId = null; awaitingReceiveForEventId = null;
   if(m.videoUrl){ currentVideoMeta = {type: detectVideoType(m.videoUrl), url: m.videoUrl}; document.getElementById('videoUrlInput').value = m.videoUrl; }
   matchKickoffTimestamp = m.kickoffTimestamp || '';
+  matchSecondHalfKickoffTimestamp = m.secondHalfKickoffTimestamp || '';
   updateKickoffUI();
-  renderMinutesTableBody();
-  Object.keys(m.minutesByPlayer||{}).forEach(pid=>{
-    const input = document.querySelector(`#minutesTableBody tr[data-pid="${pid}"] .min-input`);
-    if(input) input.value = m.minutesByPlayer[pid];
-  });
+  renderMinutesSummary();
   drawPitch(); drawGoal(); renderShotLog(); renderEventLog(); renderVideoPlayer(); drawEventPitch(); renderStartingLineupChips(); renderSubsLog(); updateQuickTagLockState(); updateReceiveLocationHint();
   subscribeToMatch(m.id);
   checkForLiveMatch();
@@ -1431,6 +1492,7 @@ async function startMatch(){
   catch(e){ alert("Couldn't start the match — check your connection and try again."); return; }
   currentMatchId = id;
   matchKickoffTimestamp = '';
+  matchSecondHalfKickoffTimestamp = '';
   updateKickoffUI();
   matches.push({...matchData, status:'live', events:[], shots:[], substitutions:[]});
   subscribeToMatch(id);
@@ -1593,7 +1655,7 @@ async function confirmDeleteTeam(){
     else{ localStorage.removeItem('matchday_active_team_id'); }
     await loadAll();
     renderRoster(); renderDashMatches(); renderMatchList(); renderPlayerChips();
-    populatePlayerSelects(); renderMinutesTableBody(); renderTeamDashboard();
+    populatePlayerSelects(); renderMinutesSummary(); renderTeamDashboard();
     resetNewMatchForm();
   }
   renderTeamSwitcher(); renderTeamsList();
@@ -1617,7 +1679,7 @@ async function switchActiveTeam(teamId){
   renderTeamSwitcher(); renderTeamsList();
   await loadAll();
   renderRoster(); renderDashMatches(); renderMatchList(); renderPlayerChips();
-  populatePlayerSelects(); renderMinutesTableBody(); renderTeamDashboard();
+  populatePlayerSelects(); renderMinutesSummary(); renderTeamDashboard();
   resetNewMatchForm();
 }
 async function migrateLegacyDataToTeam(teamId){
@@ -1685,7 +1747,7 @@ function showConnectionError(){
 async function refreshAll(manual){
   await loadAll();
   renderRoster(); renderDashMatches(); renderMatchList(); renderPlayerChips();
-  populatePlayerSelects(); renderMinutesTableBody();
+  populatePlayerSelects(); renderMinutesSummary();
   if(manual){ const btn=event.target; const old=btn.textContent; btn.textContent='Refreshed ✓'; setTimeout(()=>btn.textContent=old,1200); }
 }
 
@@ -1700,7 +1762,7 @@ document.querySelectorAll('.tab').forEach(t=>{
     document.getElementById('view-'+t.dataset.view).classList.add('active');
     if(t.dataset.view==='players'){ renderPlayerChips(); }
     if(t.dataset.view==='matches'){ renderMatchList(); closeMatchDetail(); }
-    if(t.dataset.view==='newmatch'){ populatePlayerSelects(); renderMinutesTableBody(); checkForLiveMatch(); }
+    if(t.dataset.view==='newmatch'){ populatePlayerSelects(); renderMinutesSummary(); checkForLiveMatch(); }
     if(t.dataset.view==='team'){ renderTeamsList(); renderTeamDashboard(); }
     if(t.dataset.view==='search'){ populateSearchFilters(); renderSearchResults(); }
   });
@@ -1721,13 +1783,13 @@ async function addPlayer(){
   const p = {id:uid(), name, number:num, position:pos};
   players.push(p);
   document.getElementById('rosterName').value=''; document.getElementById('rosterNum').value='';
-  renderRoster(); populatePlayerSelects(); renderMinutesTableBody();
+  renderRoster(); populatePlayerSelects(); renderMinutesSummary();
   try{ await dbInsertPlayer(activeTeamId, p); }catch(e){ showConnectionError(); }
 }
 async function removePlayer(id){
   if(!confirm('Remove this player from the roster? Past match stats will stay intact.')) return;
   players = players.filter(p=>p.id!==id);
-  renderRoster(); populatePlayerSelects(); renderMinutesTableBody();
+  renderRoster(); populatePlayerSelects(); renderMinutesSummary();
   try{ await dbDeletePlayer(id); }catch(e){ showConnectionError(); }
 }
 function renderRoster(){
@@ -1800,65 +1862,9 @@ function onGkGoalClick(evt){
 }
 
 /* ============================================================
-   MINUTES TABLE
+   MINUTES — auto-calculated from starting lineup + subs, no manual entry
 ============================================================ */
-function renderMinutesTableBody(){
-  const body = document.getElementById('minutesTableBody');
-  if(players.length===0){ body.innerHTML = `<tr><td colspan="2" class="empty">Add players to the roster first.</td></tr>`; return; }
-  body.innerHTML = players.map(p=>`<tr data-pid="${p.id}"><td class="name-cell">${escapeHtml(p.name)}${p.number?' #'+p.number:''}</td><td><input type="number" min="0" max="120" class="min-input" style="width:60px" value="0"></td></tr>`).join('');
-}
-function collectMinutes(){
-  const rows = document.querySelectorAll('#minutesTableBody tr[data-pid]');
-  const out = {};
-  rows.forEach(r=>{ out[r.dataset.pid] = parseFloat(r.querySelector('.min-input')?.value || 0) || 0; });
-  return out;
-}
-
-/* ============================================================
-   STARTING LINEUP & SUBSTITUTIONS
-============================================================ */
-let currentStartingIds = new Set();
-let currentSubs = [];
-function renderStartingLineupChips(){
-  const el = document.getElementById('startingLineupChips');
-  if(!el) return;
-  el.innerHTML = players.map(p=>`<div class="player-chip ${currentStartingIds.has(p.id)?'sel':''}" onclick="toggleStartingPlayer('${p.id}')">${escapeHtml(p.name)}${p.number?(' #'+p.number):''}</div>`).join('');
-}
-function toggleStartingPlayer(id){
-  if(currentStartingIds.has(id)) currentStartingIds.delete(id); else currentStartingIds.add(id);
-  renderStartingLineupChips();
-  persistMatchMeta();
-}
-async function logSub(type){
-  if(!currentMatchId){ alert('Start (or resume) the match first.'); return; }
-  const playerId = document.getElementById('subPlayer').value;
-  const minute = parseInt(document.getElementById('subMinute').value, 10);
-  if(!playerId){ alert('Add a player to the roster first.'); return; }
-  if(isNaN(minute)){ alert('Enter the minute this substitution happened.'); return; }
-  const sub = {id: uid(), playerId, type, minute};
-  currentSubs.push(sub);
-  mySubIds.push(sub.id);
-  document.getElementById('subMinute').value = '';
-  renderSubsLog();
-  try{ await dbInsertSub(currentMatchId, sub); }catch(e){ showConnectionError(); }
-}
-function removeSub(id){
-  currentSubs = currentSubs.filter(s=>s.id!==id);
-  mySubIds = mySubIds.filter(x=>x!==id);
-  renderSubsLog();
-  dbDeleteSub(id).catch(()=>{ showConnectionError(); });
-}
-function renderSubsLog(){
-  const el = document.getElementById('subsLog');
-  if(!el) return;
-  if(currentSubs.length===0){ el.innerHTML = '<div class="empty">No substitutions logged yet.</div>'; return; }
-  const sorted = currentSubs.slice().sort((a,b)=>a.minute-b.minute);
-  el.innerHTML = sorted.map(s=>{
-    const p = players.find(pp=>pp.id===s.playerId);
-    return `<div class="shot-log-row"><span class="tag" style="background:${s.type==='in'?'var(--goal-green)':'var(--goal-red)'}"></span><span>${escapeHtml(p?p.name:'Unknown')}</span><span style="color:var(--chalk-dim)">— ${s.type==='in'?'On':'Off'} at ${s.minute}'</span><span class="rm" onclick="removeSub('${s.id}')">remove</span></div>`;
-  }).join('');
-}
-function recalcMinutesFromSubs(){
+function computeMinutesFromLineup(){
   const length = parseInt(document.getElementById('mMatchLength').value, 10) || 90;
   const minutesMap = {};
   const onSince = {};
@@ -1878,13 +1884,71 @@ function recalcMinutesFromSubs(){
   Object.keys(onSince).forEach(pid=>{
     minutesMap[pid] = (minutesMap[pid]||0) + (length - onSince[pid]);
   });
-  let filled = 0;
-  players.forEach(p=>{
-    const input = document.querySelector(`#minutesTableBody tr[data-pid="${p.id}"] .min-input`);
-    if(input && minutesMap[p.id]!==undefined){ input.value = minutesMap[p.id]; filled++; }
-  });
-  if(filled===0) alert('Mark who started (or log some subs) first, then try again.');
+  return minutesMap;
+}
+function collectMinutes(){
+  return computeMinutesFromLineup();
+}
+function renderMinutesSummary(){
+  const el = document.getElementById('minutesSummary');
+  if(!el) return;
+  const map = computeMinutesFromLineup();
+  const entries = Object.entries(map).filter(([pid,min])=>min>0).sort((a,b)=>b[1]-a[1]);
+  if(entries.length===0){ el.innerHTML = '<span style="color:var(--chalk-dim);font-size:11px">Mark who started (or log a sub) to see minutes here.</span>'; return; }
+  el.innerHTML = entries.map(([pid,min])=>{
+    const p = players.find(x=>x.id===pid);
+    return `<span>${escapeHtml(p?p.name:'Unknown')}: <strong>${min}'</strong></span>`;
+  }).join('');
+}
+
+/* ============================================================
+   STARTING LINEUP & SUBSTITUTIONS
+============================================================ */
+let currentStartingIds = new Set();
+let currentSubs = [];
+function renderStartingLineupChips(){
+  const el = document.getElementById('startingLineupChips');
+  if(!el) return;
+  el.innerHTML = players.map(p=>`<div class="player-chip ${currentStartingIds.has(p.id)?'sel':''}" onclick="toggleStartingPlayer('${p.id}')">${escapeHtml(p.name)}${p.number?(' #'+p.number):''}</div>`).join('');
+}
+function toggleStartingPlayer(id){
+  if(currentStartingIds.has(id)) currentStartingIds.delete(id); else currentStartingIds.add(id);
+  renderStartingLineupChips();
+  renderMinutesSummary();
   persistMatchMeta();
+}
+async function logSub(type){
+  if(!currentMatchId){ alert('Start (or resume) the match first.'); return; }
+  const playerId = document.getElementById('subPlayer').value;
+  const minute = parseInt(document.getElementById('subMinute').value, 10);
+  if(!playerId){ alert('Add a player to the roster first.'); return; }
+  if(isNaN(minute)){ alert('Enter the minute this substitution happened.'); return; }
+  const sub = {id: uid(), playerId, type, minute};
+  currentSubs.push(sub);
+  mySubIds.push(sub.id);
+  document.getElementById('subMinute').value = '';
+  renderSubsLog();
+  renderMinutesSummary();
+  persistMatchMeta();
+  try{ await dbInsertSub(currentMatchId, sub); }catch(e){ showConnectionError(); }
+}
+function removeSub(id){
+  currentSubs = currentSubs.filter(s=>s.id!==id);
+  mySubIds = mySubIds.filter(x=>x!==id);
+  renderSubsLog();
+  renderMinutesSummary();
+  persistMatchMeta();
+  dbDeleteSub(id).catch(()=>{ showConnectionError(); });
+}
+function renderSubsLog(){
+  const el = document.getElementById('subsLog');
+  if(!el) return;
+  if(currentSubs.length===0){ el.innerHTML = '<div class="empty">No substitutions logged yet.</div>'; return; }
+  const sorted = currentSubs.slice().sort((a,b)=>a.minute-b.minute);
+  el.innerHTML = sorted.map(s=>{
+    const p = players.find(pp=>pp.id===s.playerId);
+    return `<div class="shot-log-row"><span class="tag" style="background:${s.type==='in'?'var(--goal-green)':'var(--goal-red)'}"></span><span>${escapeHtml(p?p.name:'Unknown')}</span><span style="color:var(--chalk-dim)">— ${s.type==='in'?'On':'Off'} at ${s.minute}'</span><span class="rm" onclick="removeSub('${s.id}')">remove</span></div>`;
+  }).join('');
 }
 
 /* ============================================================
@@ -1901,9 +1965,12 @@ function extractYouTubeId(url){ const m = url.match(/(?:youtu\.be\/|youtube\.com
 function extractVimeoId(url){ const m = url.match(/vimeo\.com\/(?:.*\/)?(\d+)/); return m? m[1] : null; }
 
 let matchKickoffTimestamp = '';
+let matchSecondHalfKickoffTimestamp = '';
 function updateKickoffUI(){
   const btn = document.getElementById('jumpToKickoffBtn');
   if(btn) btn.style.display = matchKickoffTimestamp ? 'inline-block' : 'none';
+  const btn2 = document.getElementById('jumpToSecondHalfKickoffBtn');
+  if(btn2) btn2.style.display = matchSecondHalfKickoffTimestamp ? 'inline-block' : 'none';
 }
 async function setKickoffTimestamp(){
   if(!currentMatchId){ alert('Start (or resume) the match first.'); return; }
@@ -1918,6 +1985,23 @@ async function setKickoffTimestamp(){
   if(m) m.kickoffTimestamp = ts;
   try{ await dbUpdateMatch(currentMatchId, {kickoff_timestamp: ts}); }
   catch(e){ showConnectionError(); }
+}
+async function setSecondHalfKickoffTimestamp(){
+  if(!currentMatchId){ alert('Start (or resume) the match first.'); return; }
+  const input = document.getElementById('secondHalfKickoffTimeInput');
+  let ts = input.value.trim();
+  if(!ts && currentVideoEl){ ts = formatSeconds(currentVideoEl.currentTime); }
+  if(!ts){ alert("Enter the 2nd half kickoff time (mm:ss). For a loaded local file, you can leave this blank and it'll use the video's current position instead."); return; }
+  matchSecondHalfKickoffTimestamp = ts;
+  updateKickoffUI();
+  input.value = '';
+  const m = matches.find(x=>x.id===currentMatchId);
+  if(m) m.secondHalfKickoffTimestamp = ts;
+  try{ await dbUpdateMatch(currentMatchId, {second_half_kickoff_timestamp: ts}); }
+  catch(e){ showConnectionError(); }
+}
+function jumpToSecondHalfKickoff(){
+  if(matchSecondHalfKickoffTimestamp) seekToEvent(matchSecondHalfKickoffTimestamp);
 }
 function jumpToKickoff(){
   if(matchKickoffTimestamp) seekToEvent(matchKickoffTimestamp);
@@ -2384,10 +2468,10 @@ function resetNewMatchForm(){
   document.getElementById('mScoreFor').value=0; document.getElementById('mScoreAgainst').value=0;
   document.getElementById('mNotes').value=''; document.getElementById('videoUrlInput').value='';
   document.getElementById('mMatchLength').value=90;
-  currentShots = []; currentEvents = []; pendingShot = null; currentVideoMeta = null; pendingGkType = null; pendingEventLocation = null; pitchFilterPlayerIds = new Set(); lastLoggedEventId = null; awaitingReceiveForEventId = null; matchKickoffTimestamp = '';
+  currentShots = []; currentEvents = []; pendingShot = null; currentVideoMeta = null; pendingGkType = null; pendingEventLocation = null; pitchFilterPlayerIds = new Set(); lastLoggedEventId = null; awaitingReceiveForEventId = null; matchKickoffTimestamp = ''; matchSecondHalfKickoffTimestamp = '';
   currentStartingIds = new Set(); currentSubs = [];
   myEventIds = []; myShotIds = []; mySubIds = [];
-  renderMinutesTableBody(); drawPitch(); drawGoal(); renderShotLog(); renderEventLog(); renderVideoPlayer(); updateShotHint(); drawGkGoalPicker(); drawEventPitch(); updateGkPickerVisibility(); renderPitchFilterChips(); dismissRecipientPicker(); updateQuickTagLockState(); updateReceiveLocationHint(); updateKickoffUI();
+  renderMinutesSummary(); drawPitch(); drawGoal(); renderShotLog(); renderEventLog(); renderVideoPlayer(); updateShotHint(); drawGkGoalPicker(); drawEventPitch(); updateGkPickerVisibility(); renderPitchFilterChips(); dismissRecipientPicker(); updateQuickTagLockState(); updateReceiveLocationHint(); updateKickoffUI();
   renderStartingLineupChips(); renderSubsLog();
   checkForLiveMatch();
 }
@@ -2559,7 +2643,7 @@ function renderMatchDetailEventMap(match){
       <label>Show on pitch (pick players — none selected means the pitch stays clear)</label>
       <div class="player-select-grid" id="detailPitchFilterChips" style="justify-content:center"></div>
       <div style="text-align:center;margin-bottom:8px"><span class="btn-ghost" onclick="selectAllDetailPitchFilter()">Show all</span> <span class="btn-ghost" onclick="clearDetailPitchFilter()">Clear</span></div>
-      <svg id="detailEventPitchSvg" viewBox="0 0 400 600" style="width:100%;border-radius:8px;background:var(--pitch-mid);display:block">${fullPitchSVG()}</svg>
+      <svg id="detailEventPitchSvg" viewBox="-26 -26 452 652" style="width:100%;border-radius:8px;background:var(--panel);display:block">${fullPitchSVG()}</svg>
       <div class="legend">${categoryLegendHTML()}</div>
     </div>`;
 }
@@ -2646,10 +2730,18 @@ function openMatchDetail(id){
 
     <h2 style="font-size:14px;margin-top:16px">Match Events<span class="yard"></span></h2>
     <div class="wizard-step">
+      <div class="wizard-label">📥 Import Events (CSV)</div>
+      <div class="video-note" style="margin-bottom:8px">Import passes detected by the film-review pipeline into this match. player_id / target_player_id are checked against this team's roster before anything is saved.</div>
+      <input type="file" id="importCsvInput" accept=".csv" style="display:none" onchange="handleImportCsvSelected(event)">
+      <label class="file-btn" for="importCsvInput">Choose CSV file</label>
+      <div id="importPreviewArea"></div>
+    </div>
+    <div class="wizard-step">
       <div class="wizard-label">🎬 Game Film <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--chalk-dim)">— click any timestamp below to jump here</span></div>
       <div class="chart-box" style="margin-bottom:12px">${renderMatchDetailVideo(m)}</div>
       <div id="detailVideoControlsExtra"></div>
       ${m.kickoffTimestamp ? `<div style="margin-top:8px"><span class="btn-ghost" style="cursor:pointer" onclick="seekDetailVideo('${m.kickoffTimestamp}')">⏮ Jump to Kickoff</span></div>` : ''}
+      ${m.secondHalfKickoffTimestamp ? `<div style="margin-top:4px"><span class="btn-ghost" style="cursor:pointer" onclick="seekDetailVideo('${m.secondHalfKickoffTimestamp}')">⏮ Jump to 2nd Half Kickoff</span></div>` : ''}
     </div>
     ${renderMatchDetailEventMap(m)}
     ${renderMatchDetailEvents(m)}
@@ -2663,6 +2755,250 @@ function openMatchDetail(id){
   renderDetailPitchFilterChips();
 }
 function closeMatchDetail(){ document.getElementById('matchListPanel').style.display='block'; document.getElementById('matchDetailPanel').style.display='none'; detailVideoMeta = null; openMatch = null; }
+
+/* ============================================================
+   IMPORT EVENTS (CSV) — from the external film-review pipeline
+============================================================ */
+const IMPORT_CSV_HEADER = ['id','match_id','player_id','type_id','timestamp','x','y','goal_x','goal_y','target_player_id','end_x','end_y'];
+function parseEventsCSV(text){
+  const lines = text.split(/\r?\n/).filter(l=>l.trim().length>0);
+  if(lines.length===0) return {rows:[], fatalErrors:['That file is empty.']};
+  const header = lines[0].split(',').map(h=>h.trim());
+  const headerOk = header.length===IMPORT_CSV_HEADER.length && IMPORT_CSV_HEADER.every((h,i)=>header[i]===h);
+  if(!headerOk){
+    return {rows:[], fatalErrors:[`Header row doesn't match the expected format. Expected: ${IMPORT_CSV_HEADER.join(',')}`]};
+  }
+  const rows = [];
+  for(let i=1;i<lines.length;i++){
+    const cols = lines[i].split(',');
+    if(cols.length !== IMPORT_CSV_HEADER.length){
+      rows.push({lineNum:i+1, malformed:true});
+      continue;
+    }
+    const get = idx => { const v = (cols[idx]||'').trim(); return v==='' ? undefined : v; };
+    rows.push({
+      lineNum: i+1,
+      id: get(0), match_id: get(1), player_id: get(2), type_id: get(3), timestamp: get(4),
+      x: get(5), y: get(6), goal_x: get(7), goal_y: get(8), target_player_id: get(9), end_x: get(10), end_y: get(11)
+    });
+  }
+  return {rows, fatalErrors:[]};
+}
+function classifyImportRow(r, matchId, existingIds){
+  if(r.malformed){
+    return {...r, hardFail:true, hardFailReason:'wrong number of columns', alreadyImported:false};
+  }
+  const hardFail = !r.id || (r.match_id !== matchId);
+  const hardFailReason = !r.id ? 'missing id' : (r.match_id!==matchId ? `match_id '${r.match_id}' doesn't match this match` : null);
+  const alreadyImported = !!(r.id && existingIds.has(r.id));
+  return {...r, orig_player_id:r.player_id, orig_type_id:r.type_id, orig_target_player_id:r.target_player_id, orig_timestamp:r.timestamp, hardFail, hardFailReason, alreadyImported};
+}
+async function dbImportEvents(matchId, rows){
+  if(PREVIEW_MODE || !sbClient) return rows.length;
+  const payload = rows.map(r=>({
+    id: r.id, match_id: matchId, player_id: r.player_id, type_id: r.type_id, timestamp: r.timestamp,
+    x: r.x!==undefined ? parseFloat(r.x) : null, y: r.y!==undefined ? parseFloat(r.y) : null,
+    goal_x: r.goal_x!==undefined ? parseFloat(r.goal_x) : null, goal_y: r.goal_y!==undefined ? parseFloat(r.goal_y) : null,
+    target_player_id: r.target_player_id || null,
+    end_x: r.end_x!==undefined ? parseFloat(r.end_x) : null, end_y: r.end_y!==undefined ? parseFloat(r.end_y) : null
+  }));
+  const {error} = await sbClient.from('match_events').upsert(payload, {onConflict:'id', ignoreDuplicates:true});
+  if(error) throw error;
+  return payload.length;
+}
+let pendingImportReviewRows = [];
+let pendingImportMatchId = null;
+let pendingImportElId = 'importPreviewArea';
+function handleImportCsvSelected(evt){
+  const file = evt.target.files[0];
+  evt.target.value = '';
+  if(!file || !openMatch) return;
+  pendingImportMatchId = openMatch.id;
+  pendingImportElId = 'importPreviewArea';
+  const existingIds = new Set((openMatch.events||[]).map(e=>e.id));
+  readAndReviewImportFile(file, pendingImportMatchId, existingIds, pendingImportElId);
+}
+function handleLiveImportCsvSelected(evt){
+  const file = evt.target.files[0];
+  evt.target.value = '';
+  if(!file) return;
+  if(!currentMatchId){ alert('Start (or resume) the match first.'); return; }
+  pendingImportMatchId = currentMatchId;
+  pendingImportElId = 'liveImportPreviewArea';
+  const existingIds = new Set(currentEvents.map(e=>e.id));
+  readAndReviewImportFile(file, pendingImportMatchId, existingIds, pendingImportElId);
+}
+function readAndReviewImportFile(file, matchId, existingIds, elId){
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    const {rows, fatalErrors} = parseEventsCSV(reader.result);
+    if(fatalErrors.length){
+      const el = document.getElementById(elId);
+      if(el) el.innerHTML = `<div class="empty" style="color:var(--goal-red)">${fatalErrors.map(escapeHtml).join('<br>')}</div>`;
+      return;
+    }
+    pendingImportReviewRows = rows.map(r=>classifyImportRow(r, matchId, existingIds));
+    renderImportReviewTable(elId);
+  };
+  reader.onerror = ()=>{
+    const el = document.getElementById(elId);
+    if(el) el.innerHTML = `<div class="empty" style="color:var(--goal-red)">Couldn't read that file — try again.</div>`;
+  };
+  reader.readAsText(file);
+}
+function playerNameFor(pid){
+  const p = players.find(x=>x.id===pid);
+  return p ? escapeHtml(p.name)+(p.number?' #'+p.number:'') : escapeHtml(pid||'—');
+}
+function rowIsIncluded(r){
+  if(r.hardFail || r.alreadyImported) return false;
+  return r.included !== false;
+}
+function zoneIndexForPoint(x, y){
+  if(x===undefined || y===undefined || isNaN(x) || isNaN(y)) return null;
+  const colW = (PITCH_X2-PITCH_X1)/PITCH_ZONE_COLS;
+  const rowH = (PITCH_Y2-PITCH_Y1)/PITCH_ZONE_ROWS;
+  let col = Math.floor((x-PITCH_X1)/colW);
+  let row = Math.floor((y-PITCH_Y1)/rowH);
+  col = Math.max(0, Math.min(PITCH_ZONE_COLS-1, col));
+  row = Math.max(0, Math.min(PITCH_ZONE_ROWS-1, row));
+  return {row, col};
+}
+function zoneShortLabel(row, col){ return `${ZONE_ROW_ABBR[row]} — ${ZONE_COL_ABBR[col]}`; }
+function zoneSelectOptions(zoneIdx){
+  let opts = '<option value="">— none —</option>';
+  for(let rr=0; rr<PITCH_ZONE_ROWS; rr++){
+    for(let cc=0; cc<PITCH_ZONE_COLS; cc++){
+      const sel = (zoneIdx && zoneIdx.row===rr && zoneIdx.col===cc) ? 'selected' : '';
+      opts += `<option value="${rr},${cc}" ${sel}>${zoneShortLabel(rr,cc)}</option>`;
+    }
+  }
+  return opts;
+}
+function updateImportRowZone(idx, which, value){
+  const r = pendingImportReviewRows[idx];
+  if(!r) return;
+  if(!value){
+    if(which==='origin'){ r.x = undefined; r.y = undefined; }
+    else { r.end_x = undefined; r.end_y = undefined; }
+  } else {
+    const [row,col] = value.split(',').map(Number);
+    const p = zonePointFor(row,col);
+    if(which==='origin'){ r.x = p.x; r.y = p.y; }
+    else { r.end_x = p.x; r.end_y = p.y; }
+  }
+  renderImportReviewTable(pendingImportElId);
+}
+function updateImportRowField(idx, field, value){
+  const r = pendingImportReviewRows[idx];
+  if(!r) return;
+  r[field] = value || undefined;
+  renderImportReviewTable(pendingImportElId);
+}
+function toggleImportRowInclude(idx, checked){
+  const r = pendingImportReviewRows[idx];
+  if(!r) return;
+  r.included = checked;
+}
+function renderImportReviewTable(elId){
+  const el = document.getElementById(elId);
+  if(!el) return;
+  const rows = pendingImportReviewRows;
+  if(rows.length===0){ el.innerHTML = '<div class="empty">No events found in that file.</div>'; return; }
+  const readyCount = rows.filter(rowIsIncluded).length;
+  const playerOptions = (selected)=> '<option value="">— select —</option>' + players.map(p=>`<option value="${p.id}" ${selected===p.id?'selected':''}>${escapeHtml(p.name)}${p.number?' #'+p.number:''}</option>`).join('');
+  const typeOptions = (selected)=> '<option value="">— select —</option>' + EVENT_CATS.map(cat=>{
+    const opts = EVENT_TYPES.filter(t=>t.cat===cat).map(t=>`<option value="${t.id}" ${selected===t.id?'selected':''}>${escapeHtml(t.label)}</option>`).join('');
+    return `<optgroup label="${escapeHtml(cat)}">${opts}</optgroup>`;
+  }).join('');
+  const rowsHtml = rows.map((r,i)=>{
+    if(r.alreadyImported){
+      return `<tr style="opacity:0.55">
+        <td>${escapeHtml(r.timestamp||'—')}</td>
+        <td colspan="5">${playerNameFor(r.player_id)} — already imported</td>
+        <td style="text-align:center"><input type="checkbox" disabled></td>
+      </tr>`;
+    }
+    if(r.hardFail){
+      return `<tr style="opacity:0.55">
+        <td>${escapeHtml(r.timestamp||'—')}</td>
+        <td colspan="5" style="color:var(--goal-red)">${escapeHtml(r.hardFailReason)}</td>
+        <td style="text-align:center"><input type="checkbox" disabled></td>
+      </tr>`;
+    }
+    const complete = !!(r.player_id && r.type_id && r.timestamp);
+    const checked = rowIsIncluded(r);
+    const originZone = zoneIndexForPoint(parseFloat(r.x), parseFloat(r.y));
+    const receiveZone = zoneIndexForPoint(parseFloat(r.end_x), parseFloat(r.end_y));
+    return `<tr>
+      <td><input type="text" value="${escapeHtml(r.timestamp||'')}" placeholder="mm:ss" style="width:56px;margin:0;font-size:12px" onchange="updateImportRowField(${i},'timestamp',this.value)">
+        <div style="font-size:10px;color:var(--chalk-dim)">CSV: ${escapeHtml(r.orig_timestamp||'—')}</div></td>
+      <td><select onchange="updateImportRowField(${i},'player_id',this.value)" style="margin:0;font-size:12px">${playerOptions(r.player_id)}</select>
+        <div style="font-size:10px;color:var(--chalk-dim)">CSV: ${escapeHtml(r.orig_player_id||'—')}</div></td>
+      <td><select onchange="updateImportRowField(${i},'type_id',this.value)" style="margin:0;font-size:12px">${typeOptions(r.type_id)}</select>
+        <div style="font-size:10px;color:var(--chalk-dim)">CSV: ${escapeHtml(r.orig_type_id||'—')}</div></td>
+      <td><select onchange="updateImportRowField(${i},'target_player_id',this.value)" style="margin:0;font-size:12px">${playerOptions(r.target_player_id)}</select>
+        <div style="font-size:10px;color:var(--chalk-dim)">CSV: ${escapeHtml(r.orig_target_player_id||'none')}</div></td>
+      <td><select onchange="updateImportRowZone(${i},'origin',this.value)" style="margin:0;font-size:12px">${zoneSelectOptions(originZone)}</select></td>
+      <td><select onchange="updateImportRowZone(${i},'receive',this.value)" style="margin:0;font-size:12px">${zoneSelectOptions(receiveZone)}</select></td>
+      <td>${complete?'<span style="color:var(--goal-green)">✓ ready</span>':'<span style="color:var(--amber-dim)">⚠ incomplete</span>'}</td>
+      <td style="text-align:center"><input type="checkbox" ${checked?'checked':''} onchange="toggleImportRowInclude(${i}, this.checked)"></td>
+    </tr>`;
+  }).join('');
+  el.innerHTML = `
+    <div class="video-note" style="margin-bottom:4px">Every field is editable — the model can be confidently wrong, not just missing data. Each field shows what the CSV originally said underneath. Location/Received At are shown as pitch zones, matching how manual tagging already works.</div>
+    <div class="table-wrap" style="max-height:340px;margin-top:8px">
+      <table class="stats">
+        <thead><tr><th>Time</th><th>Player</th><th>Type</th><th>Recipient</th><th>Location</th><th>Received At</th><th>Status</th><th>Include</th></tr></thead>
+        <tbody>${rowsHtml}</tbody>
+      </table>
+    </div>
+    <button class="btn" style="margin-top:10px" onclick="confirmImportEvents()" ${readyCount===0?'disabled':''}>Import ${readyCount} selected event${readyCount===1?'':'s'}</button>
+  `;
+}
+async function confirmImportEvents(){
+  const rowsToImport = pendingImportReviewRows.filter(rowIsIncluded);
+  if(!rowsToImport.length || !pendingImportMatchId) return;
+  const btn = event.target;
+  const oldText = btn.textContent;
+  btn.textContent = 'Importing…'; btn.disabled = true;
+  let count;
+  try{
+    count = await dbImportEvents(pendingImportMatchId, rowsToImport);
+  }catch(e){
+    btn.textContent = oldText; btn.disabled = false;
+    alert("Couldn't import — check your connection and try again.");
+    return;
+  }
+  const m = matches.find(x=>x.id===pendingImportMatchId);
+  if(m){
+    m.events = m.events || [];
+    const existingIds = new Set(m.events.map(e=>e.id));
+    rowsToImport.forEach(r=>{
+      if(existingIds.has(r.id)) return;
+      const ev = {id:r.id, playerId:r.player_id, typeId:r.type_id, timestamp:r.timestamp};
+      if(r.x!==undefined){ ev.x = parseFloat(r.x); ev.y = parseFloat(r.y); }
+      if(r.goal_x!==undefined){ ev.goalX = parseFloat(r.goal_x); ev.goalY = parseFloat(r.goal_y); }
+      if(r.target_player_id) ev.targetPlayerId = r.target_player_id;
+      if(r.end_x!==undefined){ ev.endX = parseFloat(r.end_x); ev.endY = parseFloat(r.end_y); }
+      m.events.push(ev);
+    });
+    if(currentMatchId===pendingImportMatchId){
+      currentEvents = m.events.slice();
+      renderEventLog(); drawEventPitch(); updateQuickTagLockState();
+    }
+  }
+  pendingImportReviewRows = [];
+  const importedMatchId = pendingImportMatchId;
+  const targetElId = pendingImportElId;
+  pendingImportMatchId = null;
+  if(targetElId==='liveImportPreviewArea'){
+    const el = document.getElementById('liveImportPreviewArea');
+    if(el) el.innerHTML = `<div class="video-note" style="color:var(--goal-green);font-weight:600">Imported ${count} event${count===1?'':'s'}.</div>`;
+    return;
+  }
+  openMatchDetail(importedMatchId);
+}
 let pendingDeleteMatchId = null;
 function deleteMatch(id){
   pendingDeleteMatchId = id;
@@ -2905,7 +3241,7 @@ async function boot(){
   await ensureTeamSetup();
   await loadAll();
   renderRoster(); renderDashMatches(); renderMatchList();
-  populatePlayerSelects(); renderMinutesTableBody();
+  populatePlayerSelects(); renderMinutesSummary();
   drawPitch(); drawGoal(); renderShotLog(); renderEventLog(); renderVideoPlayer(); updateShotHint(); drawGkGoalPicker(); drawEventPitch(); updateGkPickerVisibility(); updateQuickTagLockState();
 }
 if(PREVIEW_MODE){
