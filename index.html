@@ -458,9 +458,19 @@
   <!-- ===================== TEAM DASHBOARD ===================== -->
   <div class="view" id="view-team">
     <div class="panel" id="manageTeamsPanel" style="display:none">
+      <h2>Manage Orgs<span class="yard"></span></h2>
+      <div class="video-note" style="margin-bottom:10px">An org is a school or club. Each restricted assistant's passcode belongs to one org and only sees that org's teams — set org passcodes from Change Passcode.</div>
+      <div class="row">
+        <div><label>New org name</label><input id="newOrgName" placeholder="e.g. Ironwood High School" onkeydown="if(event.key==='Enter') addOrg()"></div>
+      </div>
+      <button class="btn" onclick="addOrg()">Add org</button>
+      <div style="height:12px"></div>
+      <div class="roster-list" id="orgsList"></div>
+      <div style="height:20px"></div>
       <h2>Manage Teams<span class="yard"></span></h2>
       <div class="row">
-        <div><label>New team name</label><input id="newTeamName" placeholder="e.g. Ironwood U12" onkeydown="if(event.key==='Enter') addTeam()"></div>
+        <div><label>New team name</label><input id="newTeamName" placeholder="e.g. Varsity" onkeydown="if(event.key==='Enter') addTeam()"></div>
+        <div><label>Org</label><select id="newTeamOrg"></select></div>
       </div>
       <button class="btn" onclick="addTeam()">Add team</button>
       <div style="height:12px"></div>
@@ -508,12 +518,16 @@
     </div>
     <div id="passcodeChangeStep" style="display:none">
       <h2 style="font-size:16px">Change Passcodes</h2>
-      <label>New team passcode <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--chalk-dim)">(other coaches — sees only the default team)</span></label>
-      <input type="password" id="newPasscodeInput" placeholder="Leave blank to keep current">
-      <label>New full-access passcode <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--chalk-dim)">(you two — sees every team)</span></label>
+      <label>New full-access passcode <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--chalk-dim)">(you — sees every org &amp; team)</span></label>
       <input type="password" id="newFullAccessPasscodeInput" placeholder="Leave blank to keep current">
-      <button class="btn" style="width:100%" onclick="submitNewPasscode()">Save changes</button>
+      <button class="btn" style="width:100%" onclick="submitNewPasscode()">Save full-access passcode</button>
       <div id="passcodeChangeMsg" class="lock-error"></div>
+      <div style="height:16px"></div>
+      <label>Org passcode <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--chalk-dim)">(assistant — sees only that org's teams)</span></label>
+      <select id="orgPasscodeOrgSelect" style="margin-bottom:8px"></select>
+      <input type="password" id="orgPasscodeInput" placeholder="New passcode for this org">
+      <button class="btn" style="width:100%" onclick="submitOrgPasscode()">Save org passcode</button>
+      <div id="orgPasscodeMsg" class="lock-error"></div>
       <div class="video-note">Anyone using this app will need the new passcode next time they open it.</div>
     </div>
   </div>
@@ -1538,6 +1552,23 @@ async function loadAll(){
   catch(e){ matches = matches||[]; storageOK = false; showConnectionError(); }
 }
 
+/* ---- Orgs (schools/clubs) ---- */
+let orgs = [];
+let activeOrgId = null; // set at login for restricted users; unused (unfiltered) for fullAccess
+async function dbLoadOrgs(){
+  if(PREVIEW_MODE || !sbClient) return [];
+  const {data, error} = await sbClient.from('orgs').select('*').order('name');
+  if(error) throw error;
+  return data||[];
+}
+async function dbCreateOrg(name){
+  if(PREVIEW_MODE || !sbClient) return uid();
+  const id = uid();
+  const {error} = await sbClient.from('orgs').insert({id, name});
+  if(error) throw error;
+  return id;
+}
+
 /* ---- Teams & per-team roster ---- */
 let teams = [];
 let activeTeamId = localStorage.getItem('matchday_active_team_id') || null;
@@ -1547,10 +1578,10 @@ async function dbLoadTeams(){
   if(error) throw error;
   return data||[];
 }
-async function dbCreateTeam(name, visibleToRestricted){
+async function dbCreateTeam(name, orgId){
   if(PREVIEW_MODE || !sbClient) return uid();
   const id = uid();
-  const {error} = await sbClient.from('teams').insert({id, name, visible_to_restricted: !!visibleToRestricted});
+  const {error} = await sbClient.from('teams').insert({id, name, org_id: orgId||null});
   if(error) throw error;
   return id;
 }
@@ -1598,13 +1629,15 @@ function renderTeamsList(){
   const el = document.getElementById('teamsList');
   if(!el) return;
   if(teams.length===0){ el.innerHTML = '<div class="empty">No teams yet — add one above.</div>'; return; }
-  el.innerHTML = teams.map(t=>`
+  el.innerHTML = teams.map(t=>{
+    const org = orgs.find(o=>o.id===t.org_id);
+    return `
     <div class="roster-item">
-      <div class="name" style="flex:1">${escapeHtml(t.name)}${t.id===activeTeamId?' <span style="color:var(--amber);font-weight:700;font-size:11px">(active)</span>':''}</div>
+      <div class="name" style="flex:1">${escapeHtml(t.name)}${t.id===activeTeamId?' <span style="color:var(--amber);font-weight:700;font-size:11px">(active)</span>':''}${org?` <span style="color:var(--chalk-dim);font-weight:400;font-size:11px">— ${escapeHtml(org.name)}</span>`:''}</div>
       ${t.id!==activeTeamId?`<div class="btn-ghost" style="cursor:pointer" onclick="switchActiveTeam('${t.id}')">Switch to this team</div>`:''}
       <div class="btn-ghost" style="cursor:pointer" onclick="renameTeam('${t.id}')">Rename</div>
       <div class="del" onclick="openDeleteTeamConfirm('${t.id}')">Delete</div>
-    </div>`).join('');
+    </div>`;}).join('');
 }
 async function renameTeam(id){
   const t = teams.find(x=>x.id===id);
@@ -1662,14 +1695,38 @@ async function confirmDeleteTeam(){
 }
 async function addTeam(){
   const name = document.getElementById('newTeamName').value.trim();
+  const orgSel = document.getElementById('newTeamOrg');
+  const orgId = orgSel ? orgSel.value : null;
   if(!name){ alert('Enter a team name.'); return; }
+  if(!orgId){ alert('Add an org first (below), then pick it here.'); return; }
   let id;
-  try{ id = await dbCreateTeam(name); }
+  try{ id = await dbCreateTeam(name, orgId); }
   catch(e){ alert("Couldn't create the team — check your connection and try again."); return; }
-  teams.push({id, name});
+  teams.push({id, name, org_id:orgId});
   document.getElementById('newTeamName').value = '';
   renderTeamsList();
   await switchActiveTeam(id);
+}
+function renderOrgsList(){
+  const sel = document.getElementById('newTeamOrg');
+  if(sel){
+    sel.innerHTML = orgs.map(o=>`<option value="${o.id}">${escapeHtml(o.name)}</option>`).join('');
+  }
+  const list = document.getElementById('orgsList');
+  if(list){
+    list.innerHTML = orgs.length===0 ? '<div class="empty">No orgs yet — add one above.</div>' :
+      orgs.map(o=>`<div class="roster-item"><div class="name" style="flex:1">${escapeHtml(o.name)}</div></div>`).join('');
+  }
+}
+async function addOrg(){
+  const name = document.getElementById('newOrgName').value.trim();
+  if(!name){ alert('Enter an org name.'); return; }
+  let id;
+  try{ id = await dbCreateOrg(name); }
+  catch(e){ alert("Couldn't create the org — check your connection and try again."); return; }
+  orgs.push({id, name});
+  document.getElementById('newOrgName').value = '';
+  renderOrgsList();
 }
 async function switchActiveTeam(teamId){
   if(teamId===activeTeamId) return;
@@ -1694,21 +1751,29 @@ async function migrateLegacyDataToTeam(teamId){
   }
 }
 async function ensureTeamSetup(){
+  try{ orgs = await dbLoadOrgs(); }catch(e){ orgs = []; }
   let allTeams = [];
   try{ allTeams = await dbLoadTeams(); }catch(e){ allTeams = []; }
   if(allTeams.length===0 && !PREVIEW_MODE){
-    let defaultId;
-    try{ defaultId = await dbCreateTeam('My Team', true); }
+    let defaultOrgId;
+    try{ defaultOrgId = await dbCreateOrg('My Program'); }
     catch(e){ showConnectionError(); return; }
-    allTeams = [{id:defaultId, name:'My Team', visible_to_restricted:true}];
+    orgs = [{id:defaultOrgId, name:'My Program'}];
+    let defaultId;
+    try{ defaultId = await dbCreateTeam('My Team', defaultOrgId); }
+    catch(e){ showConnectionError(); return; }
+    allTeams = [{id:defaultId, name:'My Team', org_id:defaultOrgId}];
     await migrateLegacyDataToTeam(defaultId);
   }
-  teams = fullAccess ? allTeams : allTeams.filter(t=>t.visible_to_restricted);
+  // fullAccess sees every team across every org (unfiltered, per current design).
+  // Restricted logins see only teams belonging to the org their passcode resolved to.
+  teams = fullAccess ? allTeams : allTeams.filter(t=>t.org_id===activeOrgId);
   if(!activeTeamId || !teams.find(t=>t.id===activeTeamId)){
     activeTeamId = teams.length ? teams[0].id : null;
     if(activeTeamId) localStorage.setItem('matchday_active_team_id', activeTeamId);
   }
   renderTeamSwitcher();
+  renderOrgsList();
 }
 /* ---- One-time migration: moves your existing matches (old blob-based
    storage) into the new per-row tables above. Run this ONCE, from the
@@ -3018,11 +3083,11 @@ async function confirmDeleteMatch(){
   let ok = false;
   try{
     const [{data:a,error:e1}, {data:b,error:e2}] = await Promise.all([
-      sbClient.rpc('verify_passcode', {check_key:'passcode', check_value: input}),
+      sbClient.rpc('verify_org_passcode', {check_value: input}),
       sbClient.rpc('verify_passcode', {check_key:'full_access_passcode', check_value: input})
     ]);
     if(e1||e2) throw (e1||e2);
-    ok = a===true || b===true;
+    ok = !!a || b===true;
   }
   catch(e){ msg.textContent = "Couldn't reach the database. Check your connection and try again."; return; }
   if(!ok){ msg.textContent = 'Incorrect passcode.'; return; }
@@ -3160,18 +3225,18 @@ async function tryUnlock(){
   const errEl = document.getElementById('lockError');
   errEl.textContent = '';
   if(!sbClient){ errEl.textContent = "Couldn't reach the database. Check your connection and try again."; return; }
-  let fullOk = false, teamOk = false;
+  let fullOk = false, matchedOrgId = null;
   try{
-    const [{data:fData,error:fErr}, {data:tData,error:tErr}] = await Promise.all([
+    const [{data:fData,error:fErr}, {data:oData,error:oErr}] = await Promise.all([
       sbClient.rpc('verify_passcode', {check_key:'full_access_passcode', check_value: input}),
-      sbClient.rpc('verify_passcode', {check_key:'passcode', check_value: input})
+      sbClient.rpc('verify_org_passcode', {check_value: input})
     ]);
-    if(fErr||tErr) throw (fErr||tErr);
-    fullOk = fData===true; teamOk = tData===true;
+    if(fErr||oErr) throw (fErr||oErr);
+    fullOk = fData===true; matchedOrgId = oData||null;
   }
   catch(e){ errEl.textContent = "Couldn't reach the database. Check your connection and try again."; return; }
-  if(fullOk){ fullAccess = true; }
-  else if(teamOk){ fullAccess = false; }
+  if(fullOk){ fullAccess = true; activeOrgId = null; }
+  else if(matchedOrgId){ fullAccess = false; activeOrgId = matchedOrgId; }
   else { errEl.textContent = 'Incorrect passcode.'; return; }
   document.getElementById('lockScreen').style.display = 'none';
   document.getElementById('mainApp').style.display = 'block';
@@ -3182,9 +3247,12 @@ function openChangePasscode(){
   document.getElementById('adminGateMsg').textContent = '';
   document.getElementById('adminGateStep').style.display = 'block';
   document.getElementById('passcodeChangeStep').style.display = 'none';
-  document.getElementById('newPasscodeInput').value = '';
   document.getElementById('newFullAccessPasscodeInput').value = '';
   document.getElementById('passcodeChangeMsg').textContent = '';
+  const orgSel = document.getElementById('orgPasscodeOrgSelect');
+  if(orgSel) orgSel.innerHTML = orgs.map(o=>`<option value="${o.id}">${escapeHtml(o.name)}</option>`).join('');
+  document.getElementById('orgPasscodeInput').value = '';
+  document.getElementById('orgPasscodeMsg').textContent = '';
   document.getElementById('passcodeModalOverlay').classList.add('show');
 }
 function closeChangePasscode(){ document.getElementById('passcodeModalOverlay').classList.remove('show'); }
@@ -3206,23 +3274,36 @@ async function verifyAdminGate(){
 }
 async function submitNewPasscode(){
   const adminInput = document.getElementById('adminGateInput').value;
-  const teamVal = document.getElementById('newPasscodeInput').value.trim();
   const fullVal = document.getElementById('newFullAccessPasscodeInput').value.trim();
   const msg = document.getElementById('passcodeChangeMsg');
-  if(!teamVal && !fullVal){ msg.textContent = 'Enter at least one new passcode.'; return; }
+  if(!fullVal){ msg.textContent = 'Enter a new full-access passcode.'; return; }
   if(!sbClient){ msg.textContent = "Couldn't reach the database. Check your connection and try again."; return; }
   try{
-    if(teamVal){
-      const {data, error} = await sbClient.rpc('admin_set_passcode', {admin_check: adminInput, target_key:'passcode', new_value: teamVal});
-      if(error || data!==true) throw (error || new Error('failed'));
-    }
-    if(fullVal){
-      const {data, error} = await sbClient.rpc('admin_set_passcode', {admin_check: adminInput, target_key:'full_access_passcode', new_value: fullVal});
-      if(error || data!==true) throw (error || new Error('failed'));
-    }
+    const {data, error} = await sbClient.rpc('admin_set_passcode', {admin_check: adminInput, target_key:'full_access_passcode', new_value: fullVal});
+    if(error || data!==true) throw (error || new Error('failed'));
     msg.style.color = 'var(--goal-green)';
-    msg.textContent = 'Passcode(s) updated.';
-    setTimeout(closeChangePasscode, 900);
+    msg.textContent = 'Full-access passcode updated.';
+    document.getElementById('newFullAccessPasscodeInput').value = '';
+  }catch(e){
+    msg.style.color = 'var(--goal-red)';
+    msg.textContent = "Couldn't save — check your connection and try again.";
+  }
+}
+async function submitOrgPasscode(){
+  const adminInput = document.getElementById('adminGateInput').value;
+  const orgSel = document.getElementById('orgPasscodeOrgSelect');
+  const orgId = orgSel ? orgSel.value : null;
+  const val = document.getElementById('orgPasscodeInput').value.trim();
+  const msg = document.getElementById('orgPasscodeMsg');
+  if(!orgId){ msg.textContent = 'Add an org first (Team tab → Manage Orgs).'; return; }
+  if(!val){ msg.textContent = 'Enter a new passcode.'; return; }
+  if(!sbClient){ msg.textContent = "Couldn't reach the database. Check your connection and try again."; return; }
+  try{
+    const {data, error} = await sbClient.rpc('admin_set_org_passcode', {admin_check: adminInput, target_org: orgId, new_value: val});
+    if(error || data!==true) throw (error || new Error('failed'));
+    msg.style.color = 'var(--goal-green)';
+    msg.textContent = 'Org passcode updated.';
+    document.getElementById('orgPasscodeInput').value = '';
   }catch(e){
     msg.style.color = 'var(--goal-red)';
     msg.textContent = "Couldn't save — check your connection and try again.";
