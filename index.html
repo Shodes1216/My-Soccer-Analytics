@@ -195,10 +195,39 @@
   <div class="lock-card">
     <div class="brand-mark" style="margin:0 auto 14px">MD</div>
     <h1 style="font-family:'Oswald',sans-serif;font-size:20px;text-align:center;margin:0 0 4px">Matchday</h1>
-    <div style="text-align:center;color:var(--chalk-dim);font-size:12px;margin-bottom:18px">Enter the team passcode to continue</div>
-    <input type="password" id="passcodeInput" placeholder="Passcode" onkeydown="if(event.key==='Enter') tryUnlock()">
-    <button class="btn" style="width:100%" onclick="tryUnlock()">Unlock</button>
-    <div id="lockError" class="lock-error"></div>
+    <div id="passcodeStep">
+      <div style="text-align:center;color:var(--chalk-dim);font-size:12px;margin-bottom:18px">Enter the team passcode to continue</div>
+      <input type="password" id="passcodeInput" placeholder="Passcode" onkeydown="if(event.key==='Enter') tryUnlock()">
+      <button class="btn" style="width:100%" onclick="tryUnlock()">Unlock</button>
+      <div id="lockError" class="lock-error"></div>
+      <div style="text-align:center;margin-top:14px;font-size:12px">
+        <span class="passcode-link" onclick="showAuthStep()">Have an account? Sign in</span>
+      </div>
+    </div>
+    <div id="authStep" style="display:none">
+      <div style="text-align:center;color:var(--chalk-dim);font-size:12px;margin-bottom:14px" id="authModeLabel">Sign in with your email</div>
+      <input type="email" id="authEmailInput" placeholder="Email">
+      <input type="password" id="authPasswordInput" placeholder="Password" onkeydown="if(event.key==='Enter') submitAuth()">
+      <button class="btn" style="width:100%" onclick="submitAuth()" id="authSubmitBtn">Sign in</button>
+      <div id="authError" class="lock-error"></div>
+      <div style="text-align:center;margin-top:14px;font-size:12px">
+        <span class="passcode-link" onclick="toggleAuthMode()" id="authToggleModeLink">New here? Create an account</span>
+      </div>
+      <div style="text-align:center;margin-top:6px;font-size:12px">
+        <span class="passcode-link" onclick="showPasscodeStep()">Use a passcode instead</span>
+      </div>
+    </div>
+    <div id="getStartedStep" style="display:none">
+      <div style="text-align:center;color:var(--chalk-dim);font-size:12px;margin-bottom:14px">You're signed in but not on an org yet.</div>
+      <label>Create a new org (head coach)</label>
+      <input id="newOrgNameOnboard" placeholder="e.g. Ironwood High School">
+      <button class="btn" style="width:100%" onclick="submitCreateOrgOnboard()">Create org &amp; continue</button>
+      <div style="height:14px"></div>
+      <label>Or join an existing org (assistant)</label>
+      <input type="password" id="joinOrgPasscodeInput" placeholder="Org invite passcode">
+      <button class="btn-ghost" style="width:100%;text-align:center;cursor:pointer" onclick="submitJoinOrgOnboard()">Join org &amp; continue</button>
+      <div id="getStartedError" class="lock-error"></div>
+    </div>
   </div>
 </div>
 
@@ -1644,9 +1673,11 @@ function renderTeamsList(){
   if(teams.length===0){ el.innerHTML = '<div class="empty">No teams yet — add one above.</div>'; return; }
   el.innerHTML = teams.map(t=>{
     const org = orgs.find(o=>o.id===t.org_id);
+    const orgOptions = orgs.map(o=>`<option value="${o.id}" ${o.id===t.org_id?'selected':''}>${escapeHtml(o.name)}</option>`).join('');
     return `
     <div class="roster-item">
       <div class="name" style="flex:1">${escapeHtml(t.name)}${t.id===activeTeamId?' <span style="color:var(--amber);font-weight:700;font-size:11px">(active)</span>':''}${org?` <span style="color:var(--chalk-dim);font-weight:400;font-size:11px">— ${escapeHtml(org.name)}</span>`:''}</div>
+      <select style="width:auto;margin:0;padding:4px 6px;font-size:11px" onchange="moveTeamToOrg('${t.id}', this.value)">${orgOptions}</select>
       ${t.id!==activeTeamId?`<div class="btn-ghost" style="cursor:pointer" onclick="switchActiveTeam('${t.id}')">Switch to this team</div>`:''}
       <div class="btn-ghost" style="cursor:pointer" onclick="renameTeam('${t.id}')">Rename</div>
       <div class="del" onclick="openDeleteTeamConfirm('${t.id}')">Delete</div>
@@ -1734,6 +1765,21 @@ function renderOrgsList(){
         <div class="del" onclick="openDeleteOrgConfirm('${o.id}')">Delete</div>
       </div>`).join('');
   }
+}
+async function moveTeamToOrg(teamId, newOrgId){
+  const t = teams.find(x=>x.id===teamId);
+  if(!t || t.org_id===newOrgId) return;
+  const prevOrgId = t.org_id;
+  t.org_id = newOrgId;
+  if(PREVIEW_MODE || !sbClient){ renderTeamsList(); return; }
+  try{
+    const {error} = await sbClient.from('teams').update({org_id:newOrgId}).eq('id', teamId);
+    if(error) throw error;
+  }catch(e){
+    t.org_id = prevOrgId;
+    alert("Couldn't move the team — check your connection and try again.");
+  }
+  renderTeamsList();
 }
 async function dbRenameOrg(id, name){
   if(PREVIEW_MODE || !sbClient) return true;
@@ -3326,6 +3372,114 @@ async function tryUnlock(){
   document.getElementById('mainApp').style.display = 'block';
   boot();
 }
+
+/* ---- Real accounts (Stage 2) — runs alongside the passcode gate above,
+   doesn't replace it yet. See matchday-auth-foundation-supabase-setup.sql. */
+let authSignUpMode = false;
+function showAuthStep(){
+  document.getElementById('passcodeStep').style.display = 'none';
+  document.getElementById('authStep').style.display = 'block';
+  document.getElementById('authError').textContent = '';
+}
+function showPasscodeStep(){
+  document.getElementById('authStep').style.display = 'none';
+  document.getElementById('getStartedStep').style.display = 'none';
+  document.getElementById('passcodeStep').style.display = 'block';
+}
+function toggleAuthMode(){
+  authSignUpMode = !authSignUpMode;
+  setAuthModeLabels();
+}
+function setAuthModeLabels(){
+  document.getElementById('authModeLabel').textContent = authSignUpMode ? 'Create your account' : 'Sign in with your email';
+  document.getElementById('authSubmitBtn').textContent = authSignUpMode ? 'Create account' : 'Sign in';
+  document.getElementById('authToggleModeLink').textContent = authSignUpMode ? 'Already have an account? Sign in' : 'New here? Create an account';
+  document.getElementById('authError').textContent = '';
+}
+async function submitAuth(){
+  const email = document.getElementById('authEmailInput').value.trim();
+  const password = document.getElementById('authPasswordInput').value;
+  const errEl = document.getElementById('authError');
+  errEl.textContent = '';
+  if(!sbClient){ errEl.textContent = "Not available in preview mode."; return; }
+  if(!email || !password){ errEl.textContent = 'Enter both email and password.'; return; }
+  try{
+    const {data, error} = authSignUpMode
+      ? await sbClient.auth.signUp({email, password})
+      : await sbClient.auth.signInWithPassword({email, password});
+    if(error) throw error;
+    if(authSignUpMode && !data.session){
+      errEl.style.color = 'var(--goal-green)';
+      errEl.textContent = 'Account created — check your email to confirm, then sign in.';
+      authSignUpMode = false; setAuthModeLabels();
+      errEl.style.color = 'var(--goal-green)';
+      errEl.textContent = 'Account created — check your email to confirm, then sign in.';
+      return;
+    }
+    await handleAuthedSession();
+  }catch(e){
+    errEl.style.color = 'var(--goal-red)';
+    errEl.textContent = e.message || "Couldn't sign in — check your details and try again.";
+  }
+}
+async function handleAuthedSession(){
+  const errEl = document.getElementById('authError');
+  let isSuper = false, memberships = [];
+  try{
+    const {data:{user}} = await sbClient.auth.getUser();
+    if(!user) throw new Error('No session');
+    const [{data:prof}, {data:mems}] = await Promise.all([
+      sbClient.from('profiles').select('is_super_admin').eq('user_id', user.id).maybeSingle(),
+      sbClient.from('org_members').select('org_id, role').eq('user_id', user.id)
+    ]);
+    isSuper = !!(prof && prof.is_super_admin);
+    memberships = mems || [];
+  }catch(e){ errEl.textContent = "Signed in, but couldn't load your account — try again."; return; }
+  if(isSuper){
+    fullAccess = true; activeOrgId = null;
+  }else if(memberships.length){
+    fullAccess = false; activeOrgId = memberships[0].org_id;
+  }else{
+    document.getElementById('authStep').style.display = 'none';
+    document.getElementById('getStartedStep').style.display = 'block';
+    return;
+  }
+  document.getElementById('lockScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+  boot();
+}
+async function submitCreateOrgOnboard(){
+  const name = document.getElementById('newOrgNameOnboard').value.trim();
+  const errEl = document.getElementById('getStartedError');
+  errEl.textContent = '';
+  if(!name){ errEl.textContent = 'Enter an org name.'; return; }
+  try{
+    const {data, error} = await sbClient.rpc('create_org_as_owner', {org_name: name});
+    if(error || !data) throw (error || new Error('failed'));
+    fullAccess = false; activeOrgId = data;
+  }catch(e){ errEl.textContent = "Couldn't create the org — check your connection and try again."; return; }
+  document.getElementById('getStartedStep').style.display = 'none';
+  document.getElementById('lockScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+  boot();
+}
+async function submitJoinOrgOnboard(){
+  const code = document.getElementById('joinOrgPasscodeInput').value;
+  const errEl = document.getElementById('getStartedError');
+  errEl.textContent = '';
+  if(!code){ errEl.textContent = 'Enter the org invite passcode.'; return; }
+  try{
+    const {data, error} = await sbClient.rpc('join_org_with_passcode', {input_passcode: code});
+    if(error) throw error;
+    if(!data){ errEl.textContent = 'Incorrect passcode, or that org is already at its member limit.'; return; }
+    fullAccess = false; activeOrgId = data;
+  }catch(e){ errEl.textContent = "Couldn't join — check your connection and try again."; return; }
+  document.getElementById('getStartedStep').style.display = 'none';
+  document.getElementById('lockScreen').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'block';
+  boot();
+}
+
 function openChangePasscode(){
   document.getElementById('adminGateInput').value = '';
   document.getElementById('adminGateMsg').textContent = '';
