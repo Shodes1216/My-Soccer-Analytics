@@ -62,6 +62,14 @@
   .roster-item .pos{font-size:10.5px;color:var(--chalk-dim);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;background:var(--border);padding:2px 7px;border-radius:4px;}
   .roster-item .del{color:var(--goal-red);font-size:12px;opacity:0.7;cursor:pointer;}
   .roster-item .del:hover{opacity:1;}
+  .roster-item .edit-link{color:var(--chalk-dim);font-size:12px;opacity:0.7;cursor:pointer;}
+  .roster-item .edit-link:hover{opacity:1;color:var(--amber);}
+  .roster-item-edit{display:flex;align-items:center;gap:8px;background:#f7f9fb;border:1px solid var(--amber);border-radius:7px;padding:8px 12px;}
+  .roster-item-edit input,.roster-item-edit select{margin:0;width:auto;padding:6px 8px;font-size:12.5px;}
+  .roster-item-edit input.re-num{width:44px;text-align:center;}
+  .roster-item-edit input.re-name{flex:1;min-width:0;}
+  .roster-item-edit select.re-pos{width:90px;flex:none;}
+  .roster-item-edit .re-actions{display:flex;gap:6px;flex:none;}
   table.stats{width:auto;min-width:100%;border-collapse:collapse;font-size:12px;}
   table.stats th{text-align:left;font-family:'Inter',sans-serif;font-weight:700;text-transform:uppercase;font-size:10.5px;letter-spacing:0.3px;color:var(--chalk-dim);border-bottom:1px solid var(--border);padding:6px 8px;white-space:nowrap;position:sticky;top:0;background:#f7f9fb;z-index:3;}
   table.stats th:first-child{position:sticky;left:0;z-index:5;background:#f7f9fb;}
@@ -271,7 +279,7 @@
         <div class="row">
           <div><label>Player name</label><input id="rosterName" placeholder="e.g. Jamie Rivera"></div>
           <div style="max-width:70px"><label>No.</label><input id="rosterNum" placeholder="9"></div>
-          <div style="max-width:110px"><label>Position</label><select id="rosterPos"><option>GK</option><option>DF</option><option>MF</option><option>FW</option></select></div>
+          <div style="max-width:110px"><label>Position</label><select id="rosterPos"></select></div>
         </div>
         <button class="btn" onclick="addPlayer()">Add player</button>
         <div style="height:12px"></div>
@@ -1668,6 +1676,12 @@ async function dbInsertPlayer(teamId, p){
   if(error) throw error;
   return p.id;
 }
+async function dbUpdatePlayer(p){
+  if(PREVIEW_MODE || !sbClient) return true;
+  const {error} = await sbClient.from('players').update({name:p.name, number:p.number, position:p.position}).eq('id', p.id);
+  if(error) throw error;
+  return true;
+}
 async function dbDeletePlayer(id){
   if(PREVIEW_MODE || !sbClient) return true;
   const {error} = await sbClient.from('players').delete().eq('id', id);
@@ -1986,6 +2000,16 @@ document.querySelectorAll('.tab').forEach(t=>{
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
 function escapeHtml(s){ return (s||'').toString().replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 
+const POSITIONS = ['GK','RB','CB','LB','RWB','LWB','CDM','CM','CAM','RW','LW','CF'];
+function positionOptionsHTML(selected){
+  return POSITIONS.map(pos=>`<option value="${pos}" ${pos===selected?'selected':''}>${pos}</option>`).join('');
+}
+(function initRosterPosSelect(){
+  const sel = document.getElementById('rosterPos');
+  if(sel) sel.innerHTML = positionOptionsHTML();
+})();
+
+let editingPlayerId = null;
 async function addPlayer(){
   if(!activeTeamId){ alert('Add or select a team first (see the Team tab).'); return; }
   const name = document.getElementById('rosterName').value.trim();
@@ -2001,19 +2025,55 @@ async function addPlayer(){
 async function removePlayer(id){
   if(!confirm('Remove this player from the roster? Past match stats will stay intact.')) return;
   players = players.filter(p=>p.id!==id);
+  if(editingPlayerId===id) editingPlayerId=null;
   renderRoster(); populatePlayerSelects(); renderMinutesSummary();
   try{ await dbDeletePlayer(id); }catch(e){ showConnectionError(); }
+}
+function editPlayer(id){
+  editingPlayerId = id;
+  renderRoster();
+}
+function cancelEditPlayer(){
+  editingPlayerId = null;
+  renderRoster();
+}
+async function saveEditPlayer(id){
+  const p = players.find(pl=>pl.id===id);
+  if(!p) return;
+  const name = document.getElementById('editName-'+id).value.trim();
+  const num = document.getElementById('editNum-'+id).value.trim();
+  const pos = document.getElementById('editPos-'+id).value;
+  if(!name){ alert('Enter a player name.'); return; }
+  p.name = name; p.number = num; p.position = pos;
+  editingPlayerId = null;
+  renderRoster(); populatePlayerSelects(); renderMinutesSummary();
+  try{ await dbUpdatePlayer(p); }catch(e){ showConnectionError(); }
 }
 function renderRoster(){
   const el = document.getElementById('rosterList');
   if(players.length===0){ el.innerHTML='<div class="empty">No players yet. Add your roster above.</div>'; return; }
-  el.innerHTML = players.map(p=>`
+  el.innerHTML = players.map(p=>{
+    if(editingPlayerId===p.id){
+      return `
+    <div class="roster-item-edit">
+      <input class="re-num" id="editNum-${p.id}" value="${escapeHtml(p.number||'')}" placeholder="No.">
+      <input class="re-name" id="editName-${p.id}" value="${escapeHtml(p.name)}" placeholder="Name">
+      <select class="re-pos" id="editPos-${p.id}">${positionOptionsHTML(p.position)}</select>
+      <div class="re-actions">
+        <button class="btn small" style="padding:6px 10px" onclick="saveEditPlayer('${p.id}')">Save</button>
+        <button class="btn-ghost" style="padding:6px 10px;font-size:11px" onclick="cancelEditPlayer()">Cancel</button>
+      </div>
+    </div>`;
+    }
+    return `
     <div class="roster-item">
       <div class="roster-num">${p.number||'-'}</div>
       <div class="name clickable-name" onclick="openPlayerModal('${p.id}')">${escapeHtml(p.name)}</div>
       <div class="pos">${p.position}</div>
+      <div class="edit-link" onclick="editPlayer('${p.id}')">Edit</div>
       <div class="del" onclick="removePlayer('${p.id}')">Remove</div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
 }
 function populatePlayerSelects(){
   const opts = players.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}${p.number?(' #'+p.number):''}</option>`).join('');
