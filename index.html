@@ -362,14 +362,18 @@
           <div class="video-note">Mark who started and log subs as they happen — minutes below update automatically, no manual entry needed.</div>
           <div class="row">
             <div style="max-width:160px"><label>Match length (min)</label><input type="number" id="mMatchLength" value="90" min="1" onchange="renderMinutesSummary(); persistMatchMeta();"></div>
+            <div style="max-width:160px"><label>Halftime at (min)</label><input type="number" id="mHalftimeMinute" placeholder="auto" min="0" onchange="renderMinutesSummary(); persistMatchMeta();"></div>
           </div>
           <label>Who started?</label>
           <div class="player-select-grid" id="startingLineupChips"></div>
+          <label style="margin-top:8px">Who started the 2nd half? <span style="text-transform:none;font-weight:400;color:var(--chalk-dim)">(leave blank if unchanged from 1st half)</span></label>
+          <div class="player-select-grid" id="secondHalfLineupChips"></div>
           <div class="shot-controls" style="margin-top:6px">
-            <select id="subPlayer" class="player-select"></select>
+            <select id="subPlayerOut" class="player-select"></select>
+            <span style="color:var(--chalk-dim);flex:none">→</span>
+            <select id="subPlayerIn" class="player-select"></select>
             <input id="subMinute" type="number" placeholder="Minute" style="max-width:90px;margin:0" min="0">
-            <button class="btn secondary" onclick="logSub('in')">Sub In</button>
-            <button class="btn secondary" onclick="logSub('out')">Sub Out</button>
+            <button class="btn secondary" onclick="logSubPair()">Log Sub</button>
           </div>
           <div class="shot-log" id="subsLog"></div>
           <label style="margin-top:10px">Minutes (auto-calculated)</label>
@@ -1311,7 +1315,7 @@ function rowToShot(r){
   return {id:r.id, playerId:r.player_id, outcome:r.outcome, originX:r.origin_x, originY:r.origin_y, goalX:r.goal_x, goalY:r.goal_y, shotType:r.shot_type, situation:r.situation};
 }
 function rowToSub(r){
-  return {id:r.id, playerId:r.player_id, type:r.type, minute:r.minute};
+  return {id:r.id, playerId:r.player_id, type:r.type, minute:r.minute, pairId:r.pair_id||null};
 }
 async function dbLoadFullMatches(){
   if(PREVIEW_MODE || !sbClient || !activeTeamId) return matches||[];
@@ -1339,6 +1343,7 @@ async function dbLoadFullMatches(){
     id:r.id, date:r.date, opponent:r.opponent, homeAway:r.home_away,
     scoreFor:r.score_for||0, scoreAgainst:r.score_against||0, notes:r.notes||'',
     matchLengthMinutes:r.match_length_minutes||90, startingPlayerIds:r.starting_player_ids||[],
+    halftimeMinute:r.halftime_minute||null, secondHalfStartingIds:r.second_half_starting_ids||[],
     minutesByPlayer:r.minutes_by_player||{}, videoUrl:r.video_url||'', kickoffTimestamp:r.kickoff_timestamp||'', secondHalfKickoffTimestamp:r.second_half_kickoff_timestamp||'', status:r.status||'final',
     events: evByMatch[r.id]||[], shots: shotByMatch[r.id]||[], substitutions: subByMatch[r.id]||[]
   }));
@@ -1349,6 +1354,7 @@ async function dbCreateMatch(m){
     id:m.id, team_id: activeTeamId, date:m.date, opponent:m.opponent, home_away:m.homeAway,
     score_for:m.scoreFor, score_against:m.scoreAgainst, notes:m.notes,
     match_length_minutes:m.matchLengthMinutes, starting_player_ids:m.startingPlayerIds,
+    halftime_minute:m.halftimeMinute||null, second_half_starting_ids:m.secondHalfStartingIds||[],
     minutes_by_player:m.minutesByPlayer, video_url:m.videoUrl, status:'live'
   });
   if(error) throw error;
@@ -1406,7 +1412,7 @@ async function dbDeleteShot(id){
 async function dbInsertSub(matchId, s){
   if(PREVIEW_MODE || !sbClient) return s.id;
   const {error} = await sbClient.from('match_subs').insert({
-    id:s.id, match_id:matchId, player_id:s.playerId, type:s.type, minute:s.minute
+    id:s.id, match_id:matchId, player_id:s.playerId, type:s.type, minute:s.minute, pair_id:s.pairId||null
   });
   if(error) throw error;
   return s.id;
@@ -1488,7 +1494,9 @@ function persistMatchMeta(){
   if(!currentMatchId) return;
   dbUpdateMatch(currentMatchId, {
     match_length_minutes: parseInt(document.getElementById('mMatchLength').value,10)||90,
+    halftime_minute: parseInt(document.getElementById('mHalftimeMinute').value,10)||null,
     starting_player_ids: Array.from(currentStartingIds),
+    second_half_starting_ids: Array.from(currentSecondHalfStartingIds),
     minutes_by_player: collectMinutes()
   }).catch(()=>{ showConnectionError(); });
 }
@@ -1538,7 +1546,9 @@ function resumeLiveMatch(matchId){
   document.getElementById('mScoreAgainst').value = m.scoreAgainst||0;
   document.getElementById('mNotes').value = m.notes||'';
   document.getElementById('mMatchLength').value = m.matchLengthMinutes||90;
+  document.getElementById('mHalftimeMinute').value = m.halftimeMinute||'';
   currentStartingIds = new Set(m.startingPlayerIds||[]);
+  currentSecondHalfStartingIds = new Set(m.secondHalfStartingIds||[]);
   currentEvents = (m.events||[]).slice();
   currentShots = (m.shots||[]).slice();
   currentSubs = (m.substitutions||[]).slice();
@@ -1566,6 +1576,8 @@ async function startMatch(){
     notes: document.getElementById('mNotes').value.trim(),
     matchLengthMinutes: parseInt(document.getElementById('mMatchLength').value,10)||90,
     startingPlayerIds: Array.from(currentStartingIds),
+    halftimeMinute: parseInt(document.getElementById('mHalftimeMinute').value,10)||null,
+    secondHalfStartingIds: Array.from(currentSecondHalfStartingIds),
     minutesByPlayer: collectMinutes(),
     videoUrl: (currentVideoMeta && currentVideoMeta.type!=='local') ? currentVideoMeta.url : ''
   };
@@ -1588,6 +1600,8 @@ async function finishMatch(){
     notes: document.getElementById('mNotes').value.trim(),
     match_length_minutes: parseInt(document.getElementById('mMatchLength').value,10)||90,
     starting_player_ids: Array.from(currentStartingIds),
+    halftime_minute: parseInt(document.getElementById('mHalftimeMinute').value,10)||null,
+    second_half_starting_ids: Array.from(currentSecondHalfStartingIds),
     minutes_by_player: collectMinutes(),
     video_url: (currentVideoMeta && currentVideoMeta.type!=='local') ? currentVideoMeta.url : '',
     status: 'final'
@@ -2077,7 +2091,11 @@ function renderRoster(){
 }
 function populatePlayerSelects(){
   const opts = players.map(p=>`<option value="${p.id}">${escapeHtml(p.name)}${p.number?(' #'+p.number):''}</option>`).join('');
-  document.querySelectorAll('.player-select').forEach(sel=>{ sel.innerHTML = opts; });
+  document.querySelectorAll('.player-select').forEach(sel=>{
+    if(sel.id==='subPlayerOut') sel.innerHTML = '<option value="">Coming off…</option>' + opts;
+    else if(sel.id==='subPlayerIn') sel.innerHTML = '<option value="">Going on…</option>' + opts;
+    else sel.innerHTML = opts;
+  });
   renderEventPlayerChips();
   renderQuickTagGrid();
   updateQuickTagLockState();
@@ -2138,11 +2156,13 @@ function onGkGoalClick(evt){
 ============================================================ */
 function computeMinutesFromLineup(){
   const length = parseInt(document.getElementById('mMatchLength').value, 10) || 90;
+  const halftimeInput = parseInt(document.getElementById('mHalftimeMinute').value, 10);
+  const halftime = isNaN(halftimeInput) ? Math.round(length/2) : halftimeInput;
   const minutesMap = {};
   const onSince = {};
   currentStartingIds.forEach(pid=>{ onSince[pid] = 0; minutesMap[pid] = 0; });
   const sorted = currentSubs.slice().sort((a,b)=>a.minute-b.minute);
-  sorted.forEach(s=>{
+  const applySub = s=>{
     if(s.type==='in'){
       onSince[s.playerId] = s.minute;
       if(minutesMap[s.playerId]===undefined) minutesMap[s.playerId] = 0;
@@ -2152,7 +2172,21 @@ function computeMinutesFromLineup(){
         delete onSince[s.playerId];
       }
     }
-  });
+  };
+  if(currentSecondHalfStartingIds.size===0){
+    sorted.forEach(applySub);
+  } else {
+    sorted.filter(s=>s.minute<halftime).forEach(applySub);
+    Object.keys(onSince).forEach(pid=>{
+      minutesMap[pid] = (minutesMap[pid]||0) + (halftime - onSince[pid]);
+      delete onSince[pid];
+    });
+    currentSecondHalfStartingIds.forEach(pid=>{
+      onSince[pid] = halftime;
+      if(minutesMap[pid]===undefined) minutesMap[pid] = 0;
+    });
+    sorted.filter(s=>s.minute>=halftime).forEach(applySub);
+  }
   Object.keys(onSince).forEach(pid=>{
     minutesMap[pid] = (minutesMap[pid]||0) + (length - onSince[pid]);
   });
@@ -2177,11 +2211,13 @@ function renderMinutesSummary(){
    STARTING LINEUP & SUBSTITUTIONS
 ============================================================ */
 let currentStartingIds = new Set();
+let currentSecondHalfStartingIds = new Set();
 let currentSubs = [];
 function renderStartingLineupChips(){
   const el = document.getElementById('startingLineupChips');
   if(!el) return;
   el.innerHTML = players.map(p=>`<div class="player-chip ${currentStartingIds.has(p.id)?'sel':''}" onclick="toggleStartingPlayer('${p.id}')">${escapeHtml(p.name)}${p.number?(' #'+p.number):''}</div>`).join('');
+  renderSecondHalfLineupChips();
 }
 function toggleStartingPlayer(id){
   if(currentStartingIds.has(id)) currentStartingIds.delete(id); else currentStartingIds.add(id);
@@ -2189,38 +2225,72 @@ function toggleStartingPlayer(id){
   renderMinutesSummary();
   persistMatchMeta();
 }
-async function logSub(type){
+function renderSecondHalfLineupChips(){
+  const el = document.getElementById('secondHalfLineupChips');
+  if(!el) return;
+  el.innerHTML = players.map(p=>`<div class="player-chip ${currentSecondHalfStartingIds.has(p.id)?'sel':''}" onclick="toggleSecondHalfStartingPlayer('${p.id}')">${escapeHtml(p.name)}${p.number?(' #'+p.number):''}</div>`).join('');
+}
+function toggleSecondHalfStartingPlayer(id){
+  if(currentSecondHalfStartingIds.has(id)) currentSecondHalfStartingIds.delete(id); else currentSecondHalfStartingIds.add(id);
+  renderSecondHalfLineupChips();
+  renderMinutesSummary();
+  persistMatchMeta();
+}
+async function logSubPair(){
   if(!currentMatchId){ alert('Start (or resume) the match first.'); return; }
-  const playerId = document.getElementById('subPlayer').value;
+  const outId = document.getElementById('subPlayerOut').value;
+  const inId = document.getElementById('subPlayerIn').value;
   const minute = parseInt(document.getElementById('subMinute').value, 10);
-  if(!playerId){ alert('Add a player to the roster first.'); return; }
+  if(!outId || !inId){ alert('Pick who is coming off and who is going on.'); return; }
+  if(outId === inId){ alert('Pick two different players.'); return; }
   if(isNaN(minute)){ alert('Enter the minute this substitution happened.'); return; }
-  const sub = {id: uid(), playerId, type, minute};
-  currentSubs.push(sub);
-  mySubIds.push(sub.id);
+  const pairId = uid();
+  const subOut = {id: uid(), playerId: outId, type:'out', minute, pairId};
+  const subIn = {id: uid(), playerId: inId, type:'in', minute, pairId};
+  currentSubs.push(subOut, subIn);
+  mySubIds.push(subOut.id, subIn.id);
   document.getElementById('subMinute').value = '';
+  document.getElementById('subPlayerOut').value = '';
+  document.getElementById('subPlayerIn').value = '';
   renderSubsLog();
   renderMinutesSummary();
   persistMatchMeta();
-  try{ await dbInsertSub(currentMatchId, sub); }catch(e){ showConnectionError(); }
+  try{ await dbInsertSub(currentMatchId, subOut); await dbInsertSub(currentMatchId, subIn); }catch(e){ showConnectionError(); }
 }
 function removeSub(id){
-  currentSubs = currentSubs.filter(s=>s.id!==id);
-  mySubIds = mySubIds.filter(x=>x!==id);
+  const target = currentSubs.find(s=>s.id===id);
+  const idsToRemove = (target && target.pairId) ? currentSubs.filter(s=>s.pairId===target.pairId).map(s=>s.id) : [id];
+  currentSubs = currentSubs.filter(s=>!idsToRemove.includes(s.id));
+  mySubIds = mySubIds.filter(x=>!idsToRemove.includes(x));
   renderSubsLog();
   renderMinutesSummary();
   persistMatchMeta();
-  dbDeleteSub(id).catch(()=>{ showConnectionError(); });
+  idsToRemove.forEach(rid=>{ dbDeleteSub(rid).catch(()=>{ showConnectionError(); }); });
 }
 function renderSubsLog(){
   const el = document.getElementById('subsLog');
   if(!el) return;
   if(currentSubs.length===0){ el.innerHTML = '<div class="empty">No substitutions logged yet.</div>'; return; }
   const sorted = currentSubs.slice().sort((a,b)=>a.minute-b.minute);
-  el.innerHTML = sorted.map(s=>{
-    const p = players.find(pp=>pp.id===s.playerId);
-    return `<div class="shot-log-row"><span class="tag" style="background:${s.type==='in'?'var(--goal-green)':'var(--goal-red)'}"></span><span>${escapeHtml(p?p.name:'Unknown')}</span><span style="color:var(--chalk-dim)">— ${s.type==='in'?'On':'Off'} at ${s.minute}'</span><span class="rm" onclick="removeSub('${s.id}')">remove</span></div>`;
-  }).join('');
+  const shown = new Set();
+  const rows = [];
+  sorted.forEach(s=>{
+    if(shown.has(s.id)) return;
+    shown.add(s.id);
+    const partner = s.pairId ? sorted.find(o=>o.id!==s.id && o.pairId===s.pairId) : null;
+    if(partner){
+      shown.add(partner.id);
+      const outSub = s.type==='out' ? s : partner;
+      const inSub = s.type==='in' ? s : partner;
+      const outP = players.find(p=>p.id===outSub.playerId);
+      const inP = players.find(p=>p.id===inSub.playerId);
+      rows.push(`<div class="shot-log-row"><span class="tag" style="background:var(--goal-red)"></span><span>${escapeHtml(outP?outP.name:'Unknown')}</span><span style="color:var(--chalk-dim)">→</span><span class="tag" style="background:var(--goal-green)"></span><span>${escapeHtml(inP?inP.name:'Unknown')}</span><span style="color:var(--chalk-dim)">at ${s.minute}'</span><span class="rm" onclick="removeSub('${s.id}')">remove</span></div>`);
+    } else {
+      const p = players.find(pp=>pp.id===s.playerId);
+      rows.push(`<div class="shot-log-row"><span class="tag" style="background:${s.type==='in'?'var(--goal-green)':'var(--goal-red)'}"></span><span>${escapeHtml(p?p.name:'Unknown')}</span><span style="color:var(--chalk-dim)">— ${s.type==='in'?'On':'Off'} at ${s.minute}'</span><span class="rm" onclick="removeSub('${s.id}')">remove</span></div>`);
+    }
+  });
+  el.innerHTML = rows.join('');
 }
 
 /* ============================================================
@@ -2740,8 +2810,9 @@ function resetNewMatchForm(){
   document.getElementById('mScoreFor').value=0; document.getElementById('mScoreAgainst').value=0;
   document.getElementById('mNotes').value=''; document.getElementById('videoUrlInput').value='';
   document.getElementById('mMatchLength').value=90;
+  document.getElementById('mHalftimeMinute').value='';
   currentShots = []; currentEvents = []; pendingShot = null; currentVideoMeta = null; pendingGkType = null; pendingEventLocation = null; pitchFilterPlayerIds = new Set(); lastLoggedEventId = null; awaitingReceiveForEventId = null; matchKickoffTimestamp = ''; matchSecondHalfKickoffTimestamp = '';
-  currentStartingIds = new Set(); currentSubs = [];
+  currentStartingIds = new Set(); currentSecondHalfStartingIds = new Set(); currentSubs = [];
   myEventIds = []; myShotIds = []; mySubIds = [];
   renderMinutesSummary(); drawPitch(); drawGoal(); renderShotLog(); renderEventLog(); renderVideoPlayer(); updateShotHint(); drawGkGoalPicker(); drawEventPitch(); updateGkPickerVisibility(); renderPitchFilterChips(); dismissRecipientPicker(); updateQuickTagLockState(); updateReceiveLocationHint(); updateKickoffUI();
   renderStartingLineupChips(); renderSubsLog();
@@ -2971,7 +3042,12 @@ function openMatchDetail(id){
 
   document.getElementById('matchDetailContent').innerHTML = `
     <h2 style="margin-bottom:4px">vs ${escapeHtml(m.opponent)} <span style="color:var(--chalk-dim);font-weight:400;font-size:13px">(${m.homeAway})</span></h2>
-    <div style="color:var(--chalk-dim);font-size:12px;margin-bottom:14px">${m.date} &middot; Final score ${m.scoreFor}–${m.scoreAgainst}${m.notes? ' &middot; '+escapeHtml(m.notes):''}</div>
+    <div style="color:var(--chalk-dim);font-size:12px;margin-bottom:14px">${m.date} &middot; Final score ${m.scoreFor}–${m.scoreAgainst}${m.notes? ' &middot; '+escapeHtml(m.notes):''}${m.status==='live' ? ' &middot; <span style="color:var(--goal-green)">&#9679; Still live / not finished</span>' : ''}</div>
+    <div style="margin-bottom:16px">
+      ${m.status==='live'
+        ? `<button class="btn secondary small" onclick="reopenMatch('${m.id}')">&#9654; Continue editing this match</button>`
+        : `<button class="btn secondary small" onclick="reopenMatch('${m.id}')">&#8617; Reopen to add more subs / passes</button>`}
+    </div>
 
     <h2 style="font-size:14px">Player Stats<span class="yard"></span></h2>
     ${buildStatsTableHTML(rows)}
@@ -3027,6 +3103,20 @@ function openMatchDetail(id){
   renderDetailPitchFilterChips();
 }
 function closeMatchDetail(){ document.getElementById('matchListPanel').style.display='block'; document.getElementById('matchDetailPanel').style.display='none'; detailVideoMeta = null; openMatch = null; }
+async function reopenMatch(id){
+  const m = matches.find(x=>x.id===id);
+  if(!m) return;
+  if(currentMatchId && currentMatchId!==id){ alert("You already have a different match live in the New Match tab. Finish or pause that one first, then reopen this one."); return; }
+  if(m.status!=='live'){
+    if(!confirm(`Reopen the match vs ${m.opponent} (${m.date}) for editing? It moves back to "live" so you can add more subs, passes, and other events. Tap "Finish & Save" again from the New Match tab whenever you're really done.`)) return;
+    try{ await dbUpdateMatch(id, {status:'live'}); }
+    catch(e){ alert("Couldn't reopen the match — check your connection and try again."); return; }
+    m.status = 'live';
+  }
+  closeMatchDetail();
+  document.querySelector('.tab[data-view="newmatch"]').click();
+  resumeLiveMatch(id);
+}
 
 /* ============================================================
    IMPORT EVENTS (CSV) — from the external film-review pipeline
