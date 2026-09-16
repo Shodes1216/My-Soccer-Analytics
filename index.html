@@ -659,6 +659,7 @@ const EVENT_TYPES = [
   {id:'aerial_lost', label:'Aerial Duel Lost', cat:'Defending'},
   {id:'ground_won', label:'Ground Duel Won', cat:'Defending'},
   {id:'ground_lost', label:'Ground Duel Lost', cat:'Defending'},
+  {id:'dribbled_past', label:'Dribbled Past', cat:'Defending'},
   {id:'foul_committed', label:'Foul Committed', cat:'Discipline'},
   {id:'foul_won', label:'Foul Won', cat:'Discipline'},
   {id:'offside', label:'Offside', cat:'Discipline'},
@@ -692,6 +693,7 @@ const HOTKEY_MAP = {
   o: {plain:'block'},
   j: {plain:'aerial_won', shift:'aerial_lost'},
   n: {plain:'ground_won', shift:'ground_lost'},
+  u: {plain:'dribbled_past'},
   f: {plain:'foul_committed', shift:'foul_won'},
   y: {plain:'yellow_card', shift:'red_card'},
   e: {plain:'offside'},
@@ -989,6 +991,7 @@ function computeStatsForPlayer(shots, events, minutes){
     interceptions: ev('interception'), recoveries: ev('recovery'), clearances: ev('clearance'), blocks: ev('block'),
     aerW, aerL, aerTotal: aerW+aerL, aerAcc: pct(aerW,aerW+aerL),
     gndW, gndL, gndTotal: gndW+gndL, gndAcc: pct(gndW,gndW+gndL),
+    dribbledPast: ev('dribbled_past'),
     foulsCommitted: ev('foul_committed'), foulsWon: ev('foul_won'),
     offsides: ev('offside'), yellow: ev('yellow_card'), red: ev('red_card'),
     saves: ev('save'), goalsConceded: ev('goal_conceded')
@@ -1009,6 +1012,7 @@ function computeMatchRating(s){
   r += (s.recoveries||0)*0.05;
   r += (s.clearances||0)*0.04;
   r += (s.blocks||0)*0.1;
+  r += (s.dribbledPast||0)*-0.15;
   r += (s.saves||0)*0.3;
   r += (s.goalsConceded||0)*-0.3;
   r += (s.foulsCommitted||0)*-0.1;
@@ -1087,6 +1091,7 @@ const STAT_COLUMNS = [
   {label:'Aer%', get:s=>s.aerTotal? s.aerAcc+'%':'-'},
   {label:'Ground', title:'Won / Attempted', get:s=>`${s.gndW}/${s.gndTotal}`},
   {label:'Gnd%', get:s=>s.gndTotal? s.gndAcc+'%':'-'},
+  {label:'DrbPast', title:'Dribbled Past — times beaten 1v1 by an attacker', get:s=>s.dribbledPast},
   {label:'Fouls', title:'Committed / Won', get:s=>`${s.foulsCommitted}/${s.foulsWon}`},
   {label:'Off', title:'Offsides', get:s=>s.offsides},
   {label:'YC', get:s=>s.yellow},
